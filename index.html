@@ -17,6 +17,8 @@ canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
 #knob{position:absolute;left:28px;top:28px;width:28px;height:28px;border-radius:50%;background:#e8e4dc;box-shadow:0 2px 6px #000;color:#555;font:700 16px/28px system-ui;text-align:center}
 #spd{position:fixed;right:14px;bottom:calc(104px + env(safe-area-inset-bottom));z-index:5;font-size:11px;min-height:34px;padding:0 10px;background:transparent;border-color:transparent}
 #tools{position:fixed;left:8px;bottom:calc(10px + env(safe-area-inset-bottom));display:flex;gap:6px;z-index:5}
+#tSec{position:fixed;left:8px;bottom:calc(58px + env(safe-area-inset-bottom));z-index:5;min-height:34px;width:34px;padding:0;font-size:15px;opacity:.85}
+#ovSec .b.on{background:#c45c3a;border-color:#c45c3a}
 #tools .b{min-height:40px;font-size:11px;padding:0 10px}
 #rob{position:fixed;right:4px;bottom:calc(146px + env(safe-area-inset-bottom));display:none;gap:4px;z-index:5;align-items:stretch}
 #rob .m{width:12px;border-radius:5px;background:#222;position:relative;overflow:hidden;border:1px solid #333}#rob .m i{position:absolute;left:0;right:0;bottom:0;background:#38b36a}
@@ -57,6 +59,8 @@ canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
 <div id="joy"><div id="knob">⟳</div></div>
 <div class="ov" id="ovBuild"><div class="card"><h3>BUILD</h3><div id="blist"></div></div></div>
 <div class="ov" id="ovMats"><div class="card"><h3>MATERIALS</h3><div id="mlist"></div><p style="font-size:11px;color:#9a958c;line-height:1.5">Digging hills yields regolith oxides. Ice wells pull water ice and dry ice. A Tesla factory needs those plus extra iron and lime.</p></div></div>
+<button class="b" id="tSec" title="Secret menu" aria-label="Secret menu">✦</button>
+<div class="ov" id="ovSec"><div class="card" style="text-align:center;max-width:300px;width:100%"><h3 style="letter-spacing:.18em;font-size:12px;opacity:.7">MENU</h3><div style="display:flex;flex-direction:column;gap:8px"><button class="b" id="sGrid">Grid</button><button class="b" id="sAI">Colony AI</button><small style="letter-spacing:.16em;opacity:.6;margin-top:4px">FAST FORWARD</small><div id="sSpd" style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px"></div><small style="letter-spacing:.16em;opacity:.6;margin-top:4px">INSTANT BUILD</small><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px"><button class="b" data-k="refinery">Refinery</button><button class="b" data-k="icewell">Ice well</button><button class="b" data-k="factory">Tesla factory</button><button class="b" data-k="launchpad">Launch pad</button><button class="b" data-k="biodome" style="grid-column:span 2">Bio Dome</button></div><button class="b" id="sClose" style="margin-top:6px">Close</button></div></div></div>
 <div class="ov" id="ovPause"><div class="card" style="text-align:center"><h3>PAUSED</h3><div style="display:flex;flex-direction:column;gap:8px"><button class="b" id="pRes">Resume</button><button class="b" id="pMute">Mute</button><button class="b" id="pAI">Colony AI: off</button><button class="b" id="pSave">Save pad</button><button class="b" id="pLoad">Load pad</button><button class="b" id="pRestart">Restart level</button><button class="b" id="pMenu">Campaign</button></div></div></div>
 <div class="ov" id="ovPad"><div class="card"><h3 id="padH">PAD BAYS</h3><div id="padL"></div><div style="text-align:center;margin-top:10px"><button class="b" id="padBack">Back</button></div></div></div>
 <div class="ov" id="ovEnd"><div class="card" style="text-align:center"><p id="eK" style="font-size:11px;letter-spacing:.2em;color:#9a958c;margin:0">OCCUPYING MARS</p><h2 id="eT" style="font-family:Georgia,serif;font-weight:400;font-size:34px;margin:8px 0"></h2><p id="eM" style="color:#9a958c;font-size:13px"></p><div style="display:flex;gap:8px;justify-content:center"><button class="b big" id="eNext">Next world</button><button class="b" id="eAgain">Play again</button></div></div></div>
@@ -168,6 +172,7 @@ function renderTerrain(){
    g.fillStyle='#5e2c16';g.beginPath();g.moveTo(cx-s,cy);g.lineTo(cx-s*.4,cy-s*.9);g.lineTo(cx+s*.6,cy-s*.7);g.lineTo(cx+s,cy);g.closePath();g.fill();
    g.fillStyle='#a8603a';g.beginPath();g.moveTo(cx-s*.4,cy-s*.9);g.lineTo(cx+s*.6,cy-s*.7);g.lineTo(cx+s*.1,cy-s*.3);g.closePath();g.fill()}
  }}
+ if(GRID){g.strokeStyle='rgba(255,236,210,.28)';g.lineWidth=.8;g.beginPath();for(let v=0;v<=N;v++)for(let u=0;u<=N;u++){const p=P(u,v);if(u<N){const q=P(u+1,v);g.moveTo(p[0],p[1]);g.lineTo(q[0],q[1])}if(v<N){const q=P(u,v+1);g.moveTo(p[0],p[1]);g.lineTo(q[0],q[1])}}g.stroke()}
  // roads overlay (world tiles)
  for(const k of S.roads){const[x,y]=k.split(',').map(Number);const h0=gh(w,x,y);const q=[[x,y],[x+1,y],[x+1,y+1],[x,y+1]].map(([i,j])=>{const[u,v]=rv(i,j);return[u*T,v*T*SQ-h0*T*HZ+OY]});
   g.fillStyle='#3a3836';g.beginPath();q.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.closePath();g.fill();g.strokeStyle='#5a5652';g.lineWidth=1;g.stroke();
@@ -209,6 +214,11 @@ function canPlace(k,x,y){const K=KINDS[k];let hh=-2;
  for(let j=0;j<K.h;j++)for(let i=0;i<K.w;i++){const tx=x+i,ty=y+j;if(tx<0||ty<0||tx>=S.w.N||ty>=S.w.N)return'Need more open ground.';
   if(occ(tx,ty))return'Too close to another building.';if(k!=='road'&&S.roads.has(tx+','+ty))return"Can't build on a road.";if(k==='road'&&S.roads.has(tx+','+ty))return"Don't overlay the roads.";const f=tileFlat(S.w,tx,ty);if(f<0)return'Flatten before you build.';if(hh===-2)hh=f;else if(hh!==f)return'Need a flat grid square.'}
  return null}
+let GRID=false;
+function cheatBuild(k){const K=KINDS[k];if(count(k,false)&&k!=='pack'){toast(K.name+' is already on the pad.');return false}let s=findSite(k,true);if(!s){toast('No room for a '+K.name+'.');return false}
+ if(s.lev){const hh=S.bh0;for(let j=0;j<=K.h;j++)for(let i=0;i<=K.w;i++)setH(S.w,s.x+i,s.y+j,hh);fixAll(S.w);S.w.rev++}
+ if(canPlace(k,s.x,s.y)){toast('No room for a '+K.name+'.');return false}if(K.sect&&S.sections>0)S.sections--;
+ const b={id:S.nid++,kind:k,x:s.x,y:s.y,w:K.w,h:K.h,bt:0,bt0:K.t,bat:0,dust:0,gh:k==='biodome'?{grown:0,remain:0,crop:0,fruit:0}:null};S.built.push(b);fxDust(s.x+K.w/2,s.y+K.h/2,14);toast(K.name+' online.');sfx('done');uiRefresh();return b}
 function placeBuild(k,x,y){const K=KINDS[k];const e=prereq(k)||canPlace(k,x,y);if(e){toast(e);return false}
  if(k==='road'){S.roads.add(x+','+y);S.w.rev++;sfx('shape');return true}
  const l=lacks(K.cost);if(l.length){toast('Need more '+l.map(m=>m[1]).join(', ')+'.');return false}
@@ -559,7 +569,12 @@ $('pMute').onclick=()=>{muted=!muted;$('pMute').textContent=muted?'Unmute':'Mute
 function rotStep(d){const[a,b]=unproj(W/2,H/2);ROT=(ROT+d+4)%4;const[u2,v2]=rv(a,b);cam.x=u2*T;cam.y=v2*T*SQ-hS(a,b)*T*HZ;clampCam()}
 $('tRot').onclick=()=>{rotStep(1);toast('Rotated the view.')};
 const aiSet=v=>{S.ai=v;$('pAI').textContent='Colony AI: '+(v?'on':'off');toast(v?'Colony AI on. Optimus will raise every structure.':'Colony AI off.')};
-$('tAI').onclick=()=>aiSet(!S.ai);$('pAI').onclick=()=>aiSet(!S.ai);
+$('tAI').onclick=()=>aiSet(!S.ai);
+function secSync(){$('sGrid').classList.toggle('on',GRID);$('sAI').classList.toggle('on',!!S.ai);[...$('sSpd').children].forEach((b,i)=>b.classList.toggle('on',i===speedI))}
+$('sSpd').innerHTML=SPEEDS.map(v=>`<button class="b">${v}x</button>`).join('');[...$('sSpd').children].forEach((b,i)=>b.onclick=()=>{speedI=i;$('spd').textContent=SPEEDS[i]+'X';secSync()});
+$('tSec').onclick=()=>{if(!S)return;secSync();$('ovSec').style.display='grid'};$('sClose').onclick=()=>{$('ovSec').style.display='none'};$('ovSec').addEventListener('pointerdown',e=>{if(e.target.id==='ovSec')$('ovSec').style.display='none'});
+$('sGrid').onclick=()=>{GRID=!GRID;tcRev=-1;secSync()};$('sAI').onclick=()=>{aiSet(!S.ai);secSync()};
+for(const b of document.querySelectorAll('#ovSec [data-k]'))b.onclick=()=>{cheatBuild(b.dataset.k);secSync()};$('pAI').onclick=()=>aiSet(!S.ai);
 function padMenu(mode){$('ovPause').style.display='none';$('ovPad').style.display='grid';$('padH').textContent=mode==='save'?'WRITE THIS PAD TO A BAY':'RESTORE A PAD FROM A BAY';const L=$('padL');L.innerHTML='';
  for(let s=1;s<=3;s++){const i=padInfo(s);const d=document.createElement('div');d.className='it';d.innerHTML=`<div style="flex:1"><b>Bay ${s}</b><small>${i?'World '+i.lv+' · '+new Date(i.at).toLocaleString():'Empty'}</small></div>`;
   const go=document.createElement('button');go.className='b';go.textContent=mode==='save'?'Save':'Load';go.onclick=()=>{if(mode==='save'?savePad(s):loadPad(s)){closeOv()}else padMenu(mode)};d.appendChild(go);
@@ -647,15 +662,15 @@ function mkPlanet(){const s=256,c=document.createElement('canvas');c.width=c.hei
   const l=Math.max(.15,(-u*.5-v*.4+zz*.8));im.data[i]=Math.min(255,R*l);im.data[i+1]=Math.min(255,G*l);im.data[i+2]=Math.min(255,B*l);im.data[i+3]=255}g.putImageData(im,0,0);return c}
 function drawTitle(t){cx.setTransform(DPR,0,0,DPR,0,0);cx.fillStyle='#07080c';cx.fillRect(0,0,W,H);for(const s of stars){cx.globalAlpha=s.a*(.55+.45*Math.sin(t*s.tw+s.x*12));cx.fillStyle='#e8e4dc';cx.beginPath();cx.arc(((s.x+t*.004)%1)*W,s.y*H,s.r,0,7);cx.fill()}cx.globalAlpha=1;
  if(!planet)planet=mkPlanet();const r=Math.min(W,H)*.34;cx.save();cx.translate(W*.5,H*.36);cx.rotate(t*.02);cx.drawImage(planet,-r,-r,r*2,r*2);cx.restore()}
-function showTitle(){$('title').style.display='flex';$('top').style.display='none';for(const id of['tools','joy','spd','mini'])$(id).style.visibility='hidden';
+function showTitle(){$('title').style.display='flex';$('top').style.display='none';for(const id of['tools','joy','spd','mini','tSec'])$(id).style.visibility='hidden';
  let done=0;try{done=+localStorage.getItem('om.done')||0}catch(e){}const L=$('tLv');L.innerHTML='';for(const l of LEVELS){const b=document.createElement('button');b.className='b';b.textContent=l[0];b.title=l[1];if(l[0]>done+1){b.style.opacity=.35}b.onclick=()=>go(l[0]);L.appendChild(b)}}
-function go(id){aud();$('title').style.display='none';$('top').style.display='flex';for(const i of['tools','joy','spd','mini'])$(i).style.visibility='';startLevel(id)}
+function go(id){aud();$('title').style.display='none';$('top').style.display='flex';for(const i of['tools','joy','spd','mini','tSec'])$(i).style.visibility='';startLevel(id)}
 $('tPlay').onclick=()=>{let d=0;try{d=+localStorage.getItem('om.done')||0}catch(e){}go(Math.min(LEVELS.length,d+1))};
 function resize(){DPR=Math.min(1.5,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR}addEventListener('resize',resize);resize();
 window.__cam=cam;window.__sp=(x,y)=>sp(x,y,hAt(S.w,Math.max(0,Math.min(S.w.N-.01,x)),Math.max(0,Math.min(S.w.N-.01,y))));
 // debug hook
 window.__om={get S(){return S},go,step:(sec)=>{for(let i=0;i<sec*15;i++)step(1/15)},give(m){for(const k in m)S.mats[k]+=m[k]},placeBuild,canPlace,shape,tileFlat:(x,y)=>tileFlat(S.w,x,y),
- factoryMake,greenhouse,savePad,loadPad,startDig,digTarget,tileHigh,siteHigh,fps:()=>fpsA.length/fpsA.reduce((a,b)=>a+b,0),flatten(x,y,w,h,v){for(let j=0;j<=h;j++)for(let i=0;i<=w;i++)setH(S.w,x+i,y+j,v);S.w.rev++}};
+ factoryMake,greenhouse,savePad,loadPad,startDig,digTarget,tileHigh,siteHigh,cheatBuild,fps:()=>fpsA.length/fpsA.reduce((a,b)=>a+b,0),flatten(x,y,w,h,v){for(let j=0;j<=h;j++)for(let i=0;i<=w;i++)setH(S.w,x+i,y+j,v);S.w.rev++}};
 const q=new URLSearchParams(location.search);if(q.get('level')){go(Math.max(1,Math.min(LEVELS.length,+q.get('level')||1)))}else showTitle();
 requestAnimationFrame(frame);
 </script></body></html>
