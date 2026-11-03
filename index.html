@@ -14,7 +14,7 @@ canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
 #pause{width:44px;padding:0}
 #toast{position:fixed;top:calc(64px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);max-width:88vw;background:rgba(14,15,19,.9);border:1px solid #2b2f38;border-radius:6px;padding:12px 18px;font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:15px;text-align:center;line-height:1.45;z-index:6;pointer-events:none;transition:opacity .4s;opacity:0}
 #joy{position:fixed;right:max(4px,env(safe-area-inset-right));bottom:calc(4px + env(safe-area-inset-bottom));width:84px;height:84px;border-radius:50%;background:radial-gradient(#22252c,#111318);border:1px solid #2b2f38;z-index:5;touch-action:none}
-#knob{position:absolute;left:28px;top:28px;width:28px;height:28px;border-radius:50%;background:#e8e4dc;box-shadow:0 2px 6px #000}
+#knob{position:absolute;left:28px;top:28px;width:28px;height:28px;border-radius:50%;background:#e8e4dc;box-shadow:0 2px 6px #000;color:#555;font:700 16px/28px system-ui;text-align:center}
 #spd{position:fixed;right:14px;bottom:calc(104px + env(safe-area-inset-bottom));z-index:5;font-size:11px;min-height:34px;padding:0 10px;background:transparent;border-color:transparent}
 #tools{position:fixed;left:8px;bottom:calc(10px + env(safe-area-inset-bottom));display:flex;gap:6px;z-index:5}
 #tools .b{min-height:40px;font-size:11px;padding:0 10px}
@@ -54,7 +54,7 @@ canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
 <div id="rob"><div class="m"><i id="mbar"></i></div><div class="p"><div class="t" id="rname">1</div><button class="b" id="rDig">Dig</button><button class="b" id="rCharge">Charge</button><button class="b" id="rStay">Stay</button></div></div>
 <div id="ctx"><button class="b" id="cRot">Rotate</button><button class="b big" id="cGo">Build</button><button class="b" id="cX">Cancel</button></div>
 <button class="b" id="spd">1X</button>
-<div id="joy"><div id="knob"></div></div>
+<div id="joy"><div id="knob">⟳</div></div>
 <div class="ov" id="ovBuild"><div class="card"><h3>BUILD</h3><div id="blist"></div></div></div>
 <div class="ov" id="ovMats"><div class="card"><h3>MATERIALS</h3><div id="mlist"></div><p style="font-size:11px;color:#9a958c;line-height:1.5">Digging hills yields regolith oxides. Ice wells pull water ice and dry ice. A Tesla factory needs those plus extra iron and lime.</p></div></div>
 <div class="ov" id="ovPause"><div class="card" style="text-align:center"><h3>PAUSED</h3><div style="display:flex;flex-direction:column;gap:8px"><button class="b" id="pRes">Resume</button><button class="b" id="pMute">Mute</button><button class="b" id="pAI">Colony AI: off</button><button class="b" id="pSave">Save pad</button><button class="b" id="pLoad">Load pad</button><button class="b" id="pRestart">Restart level</button><button class="b" id="pMenu">Campaign</button></div></div></div>
@@ -89,7 +89,7 @@ function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t
 function vnoise(seed){const r=rng(seed),g=[];for(let i=0;i<4096;i++)g.push(r());return(x,y)=>{const xi=Math.floor(x),yi=Math.floor(y),fx=x-xi,fy=y-yi,u=fx*fx*(3-2*fx),v=fy*fy*(3-2*fy),G=(a,b)=>g[((a&63)*64+(b&63))];return G(xi,yi)*(1-u)*(1-v)+G(xi+1,yi)*u*(1-v)+G(xi,yi+1)*(1-u)*v+G(xi+1,yi+1)*u*v}}
 // ---------- world ----------
 function newWorld(lv){
- const [id,name,N,seed,layout,px,py]=lv;const n=vnoise(seed),r=rng(seed*7);
+ const [id,name,N0,seed,layout,px0,py0]=lv;const N=Math.round(N0*1.3),px=Math.round(px0*1.3),py=Math.round(py0*1.3);const n=vnoise(seed),r=rng(seed*7);
  const V=N+1,h=new Int8Array(V*V);
  for(let y=0;y<V;y++)for(let x=0;x<V;x++){
   let f=n(x*.13,y*.13)*.6+n(x*.31+9,y*.31)*.3+n(x*.7,y*.7+5)*.1;
@@ -130,8 +130,8 @@ function irv(u,v){const N=S.w.N;return ROT===0?[u,v]:ROT===1?[v,N-u]:ROT===2?[N-
 function ghV(u,v){const[x,y]=irv(u,v);return gh(S.w,x,y)}
 function wp(u,v,hh){return[u*T,v*T*SQ-hh*T*HZ]}
 function hS(x,y){return hAt(S.w,Math.max(0,Math.min(S.w.N-.01,x)),Math.max(0,Math.min(S.w.N-.01,y)))}
-function sp(x,y,hh){if(hh==null)hh=hS(x,y);const[u,v]=rv(x,y);const[a,b]=wp(u,v,hh);return[(a-cam.x)*cam.z+W/2,(b-cam.y)*cam.z+H/2]}
-function unproj(sx,sy){ // screen -> tile coords (iterate height)
+function sp(x,y,hh){if(hh==null)hh=hS(x,y);const[u,v]=rv(x,y);const[a,b]=wp(u,v,hh);return fwdVA((a-cam.x)*cam.z+W/2,(b-cam.y)*cam.z+H/2)}
+function unproj(sx,sy){[sx,sy]=invVA(sx,sy);
  const ax=(sx-W/2)/cam.z+cam.x,ay=(sy-H/2)/cam.z+cam.y;let v=ay/(T*SQ),u=ax/T;
  for(let i=0;i<6;i++){const[x,y]=irv(u,v);v=(ay+hS(x,y)*T*HZ)/(T*SQ)}
  return irv(u,v);}
@@ -334,11 +334,14 @@ function colonyAI(){const P=packs();
 function savePad(slot){try{const d={v:2,lv:S.lv[0],h:Array.from(S.w.h),built:S.built.map(b=>({...b,make:b.make||null})),bots:S.bots.map(o=>({...o,task:o.task&&o.task.id?{bid:o.task.id}:o.task,home:o.home})),
  mats:S.mats,time:S.time,sections:S.sections,roads:[...S.roads],trucks:S.trucks,nid:S.nid,starlink:S.starlink,landing:S.landing,landT:S.landT,savedAt:Date.now()};
  localStorage.setItem('om.pad.'+slot,JSON.stringify(d));toast('Pad written to bay '+slot+'.');return true}catch(e){toast('Could not write the pad log.');return false}}
-function loadPad(slot){let d;try{d=JSON.parse(localStorage.getItem('om.pad.'+slot))}catch(e){}if(!d){toast('Bay '+slot+' is empty.');return false}
+function loadPad(slot){let d;try{d=JSON.parse(localStorage.getItem('om.pad.'+slot))}catch(e){}if(!d){toast('Bay '+slot+' is empty.');return false}{const L=LEVELS.find(l=>l[0]===d.lv)||LEVELS[0],V=Math.round(L[2]*1.3)+1;if(!d.h||d.h.length!==V*V){toast('That pad log is from an older, smaller map. It cannot be restored.');return false}}
  startLevel(d.lv);S.w.h.set(d.h);S.w.rev++;S.built=d.built;S.bots=d.bots.map(o=>{if(o.task&&o.task.bid)o.task=S.built.find(b=>b.id===o.task.bid)||null;return o});
  Object.assign(S,{mats:d.mats,time:d.time,sections:d.sections,roads:new Set(d.roads),trucks:d.trucks,nid:d.nid,starlink:d.starlink,landing:d.landing,landT:d.landT||0});S.lp=null;toast('Pad restored from bay '+slot+'.');return true}
 function padInfo(slot){try{const d=JSON.parse(localStorage.getItem('om.pad.'+slot));return d?{lv:d.lv,at:d.savedAt}:null}catch(e){return null}}
 function erasePad(slot){try{localStorage.removeItem('om.pad.'+slot);toast('Bay '+slot+' wiped.')}catch(e){toast('Could not erase that bay.')}}
+let VA=0;function setVA(){cx.setTransform(DPR,0,0,DPR,0,0);if(VA){cx.translate(W/2,H/2);cx.scale(1,SQ);cx.rotate(VA);cx.scale(1,1/SQ);cx.translate(-W/2,-H/2)}}
+function fwdVA(x,y){if(!VA)return[x,y];const dx=x-W/2,dy=(y-H/2)/SQ,c=Math.cos(VA),s=Math.sin(VA);return[W/2+dx*c-dy*s,H/2+(dx*s+dy*c)*SQ]}
+function invVA(x,y){if(!VA)return[x,y];const dx=x-W/2,dy=(y-H/2)/SQ,c=Math.cos(-VA),s=Math.sin(-VA);return[W/2+dx*c-dy*s,H/2+(dx*s+dy*c)*SQ]}
 // ---------- drawing ----------
 let fpsA=[],lastF=0,SUN=[.4,.25];
 function dirV(vx,vy){return ROT===0?[vx,vy]:ROT===1?[-vy,vx]:ROT===2?[-vx,-vy]:[vy,-vx]}
@@ -475,7 +478,7 @@ function frame(now){requestAnimationFrame(frame);const dtr=Math.min(.1,(now-(las
  const ct=S.time%DAY;let nk=0;if(ct>=DAYLEN)nk=Math.min(1,(ct-DAYLEN)/25,(DAY-ct)/25);S.nightK=nk;const dk=ct<DAYLEN?ct/DAYLEN:0;
  const ang=dk*Math.PI;const sx0=-Math.cos(ang),[su,sv]=dirV(sx0,.3);SUN=[su*(1.2-Math.sin(ang)*.7),.35+(1-Math.sin(ang))*.3,ct<DAYLEN?Math.min(1,Math.sin(ang)*4)*(S.storm>0?.3:1):0];S.lights=[];
  cx.setTransform(DPR,0,0,DPR,0,0);const t=now/1000;drawSky(t);
- const o0=wp(0,0,0);const ox=(o0[0]-cam.x)*cam.z+W/2,oy=(o0[1]-cam.y)*cam.z+H/2;cx.drawImage(tc,ox,oy-OY*cam.z,tc.width*cam.z,tc.height*cam.z);
+ setVA();const o0=wp(0,0,0);const ox=(o0[0]-cam.x)*cam.z+W/2,oy=(o0[1]-cam.y)*cam.z+H/2;cx.drawImage(tc,ox,oy-OY*cam.z,tc.width*cam.z,tc.height*cam.z);cx.setTransform(DPR,0,0,DPR,0,0);
  const quad=(x,y,fill,stroke)=>{const q=[[x,y],[x+1,y],[x+1,y+1],[x,y+1]].map(([i,j])=>sp(i,j,gh(S.w,i,j)));cx.fillStyle=fill;poly(q);cx.fill();if(stroke){cx.strokeStyle=stroke;cx.lineWidth=1.2;cx.stroke()}};
  if(S.arm&&S.arm.x!=null&&S.arm.k!=='road'){const K=KINDS[S.arm.k],bad=canPlace(S.arm.k,S.arm.x,S.arm.y);for(let j=0;j<K.h;j++)for(let i=0;i<K.w;i++)quad(S.arm.x+i,S.arm.y+j,bad?'rgba(220,70,50,.4)':'rgba(90,230,150,.4)','rgba(255,255,255,.6)')}
  if(S.arm&&S.arm.k==='road'&&S.arm.hx!=null)quad(S.arm.hx,S.arm.hy,canPlace('road',S.arm.hx,S.arm.hy)?'rgba(220,70,50,.4)':'rgba(90,230,150,.45)','#fff');
@@ -495,10 +498,12 @@ function frame(now){requestAnimationFrame(frame);const dtr=Math.min(.1,(now-(las
   const p=sp(f.x+f.vx*f.t,f.y+f.vy*f.t*.3,hS(f.x,f.y)+f.t*.8);
   if(f.k==='s'){cx.fillStyle=`rgba(255,${200+Math.random()*55|0},120,${a})`;cx.fillRect(p[0]+(Math.random()-.5)*8*cam.z,p[1]-6*cam.z-f.t*20*cam.z,1.6*cam.z,1.6*cam.z);S.lights.push([p[0],p[1]-5*cam.z,6*cam.z,'255,210,120']);continue}
   cx.fillStyle=`rgba(200,130,80,${a*.45})`;cx.beginPath();cx.arc(p[0],p[1],(3+f.t*5)*cam.z,0,7);cx.fill()}
+ cx.setTransform(DPR,0,0,DPR,0,0);
  // day/night grading
  const dusk=ct<DAYLEN?Math.max(0,1-Math.min(ct,DAYLEN-ct)/70):0;
  if(dusk>0||nk>0){cx.globalCompositeOperation='multiply';const r=255-nk*190-dusk*10,g=255-nk*175-dusk*70,b=255-nk*120-dusk*110;cx.fillStyle=`rgb(${r|0},${g|0},${b|0})`;cx.fillRect(0,0,W,H);cx.globalCompositeOperation='source-over'}
  if(S.lights.length&&(nk>.1||S.lights.length<40)){cx.globalCompositeOperation='lighter';for(const[x,y,r,c]of S.lights){const g=cx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(${c},${.35*(nk>.1?1:.5)})`);g.addColorStop(1,`rgba(${c},0)`);cx.fillStyle=g;cx.fillRect(x-r,y-r,r*2,r*2)}cx.globalCompositeOperation='source-over'}
+ cx.setTransform(DPR,0,0,DPR,0,0);
  // atmosphere haze + motes
  const hz=cx.createLinearGradient(0,0,0,H*.35);hz.addColorStop(0,`rgba(${nk>.5?'20,20,50':'230,150,100'},${.22})`);hz.addColorStop(1,'rgba(0,0,0,0)');cx.fillStyle=hz;cx.fillRect(0,0,W,H*.35);
  cx.fillStyle=`rgba(255,210,170,${.25-nk*.15})`;for(let i=0;i<28;i++){const x=((i*173.3+t*(12+i%5*4))%(W+40))-20,y=((i*97.1+Math.sin(t*.5+i)*20)%H);cx.fillRect(x,y,1.5,1.5)}
@@ -545,7 +550,8 @@ $('bMats').onclick=()=>{if($('ovMats').style.display==='grid')closeOv();else{clo
 for(const id of['ovBuild','ovMats'])$(id).onclick=e=>{if(e.target.id===id)closeOv()};
 $('pause').onclick=()=>{S.paused=true;$('ovPause').style.display='grid'};$('pRes').onclick=closeOv;
 $('pMute').onclick=()=>{muted=!muted;$('pMute').textContent=muted?'Unmute':'Mute';if(AC)master.gain.value=muted?0:.5};
-$('tRot').onclick=()=>{const[a,b]=unproj(W/2,H/2);ROT=(ROT+1)%4;const[u2,v2]=rv(a,b);cam.x=u2*T;cam.y=v2*T*SQ-hS(a,b)*T*HZ;toast('Rotated the view.')};
+function rotStep(d){const[a,b]=unproj(W/2,H/2);ROT=(ROT+d+4)%4;const[u2,v2]=rv(a,b);cam.x=u2*T;cam.y=v2*T*SQ-hS(a,b)*T*HZ;clampCam()}
+$('tRot').onclick=()=>{rotStep(1);toast('Rotated the view.')};
 const aiSet=v=>{S.ai=v;$('pAI').textContent='Colony AI: '+(v?'on':'off');toast(v?'Colony AI on. Optimus will raise every structure.':'Colony AI off.')};
 $('tAI').onclick=()=>aiSet(!S.ai);$('pAI').onclick=()=>aiSet(!S.ai);
 function padMenu(mode){$('ovPause').style.display='none';$('ovPad').style.display='grid';$('padH').textContent=mode==='save'?'WRITE THIS PAD TO A BAY':'RESTORE A PAD FROM A BAY';const L=$('padL');L.innerHTML='';
@@ -583,7 +589,9 @@ const jE=$('joy');jE.addEventListener('pointerdown',e=>{aud();joy.id=e.pointerId
 const jup=()=>{joy.id=null;joy.x=joy.y=0;$('knob').style.transform=''};jE.addEventListener('pointerup',jup);jE.addEventListener('pointercancel',jup);
 function jmove(e){const r=jE.getBoundingClientRect();let x=(e.clientX-r.left-r.width/2)/(r.width/2),y=(e.clientY-r.top-r.height/2)/(r.height/2);const d=Math.hypot(x,y);if(d>1){x/=d;y/=d}joy.x=x;joy.y=y;$('knob').style.transform=`translate(${x*26}px,${y*26}px)`}
 function clampCam(){const N=S.w.N;cam.x=Math.max(0,Math.min(N*T,cam.x));cam.y=Math.max(-T*3,Math.min(N*T*SQ,cam.y))}
-function input(dt){let jx=joy.x+((keys.ArrowRight||keys.KeyD)?1:0)-((keys.ArrowLeft||keys.KeyA)?1:0),jy=joy.y+((keys.ArrowDown||keys.KeyS)?1:0)-((keys.ArrowUp||keys.KeyW)?1:0);
+function input(dt){if(joy.id!=null&&Math.abs(joy.x)>.08){VA+=joy.x*Math.abs(joy.x)*dt*2.6;if(VA>Math.PI/4){rotStep(1);VA-=Math.PI/2}else if(VA<-Math.PI/4){rotStep(-1);VA+=Math.PI/2}}else if(VA){const k=Math.min(1,dt*7);VA-=VA*k;if(Math.abs(VA)<.003)VA=0}
+ if(joy.id!=null&&Math.abs(joy.y)>.25)cam.z=Math.max(.45,Math.min(3,cam.z*Math.exp(-(joy.y-Math.sign(joy.y)*.25)*dt*.9)));
+ let jx=0+((keys.ArrowRight||keys.KeyD)?1:0)-((keys.ArrowLeft||keys.KeyA)?1:0),jy=0+((keys.ArrowDown||keys.KeyS)?1:0)-((keys.ArrowUp||keys.KeyW)?1:0);
  if(jx||jy){cam.x+=jx*dt*420/cam.z;cam.y+=jy*dt*420/cam.z;clampCam()}
  if(gest&&gest.mode==='tap'&&ptr.size===1&&!S.arm){const p=[...ptr.values()][0];const held=(performance.now()-p.t0)/1000;
   if(held>.45&&!botAt(p.x,p.y)&&tool!=='dig'){gest.held=true;gest.rep-=dt;if(gest.rep<=0){gest.rep=.16;const v=nearestV(p.x,p.y);if(v&&shape(S.w,v[0],v[1],tool==='lower'?-1:1))sfx('shape')}}}}
