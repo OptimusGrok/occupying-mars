@@ -49,7 +49,7 @@ canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
 <div id="clock"><span id="sun">☀</span><span id="tm">15:00</span><span id="bat"><i></i></span><span id="bp">100%</span></div><button class="b" id="pause">II</button></div>
 <canvas id="mini"></canvas>
 <div id="toast"></div>
-<div id="tools"><button class="b" id="tRaise">Raise</button><button class="b" id="tLower">Lower</button><button class="b" id="tRot" title="Rotate view">⟳</button><button class="b" id="tAI">AI</button></div>
+<div id="tools"><button class="b" id="tRaise">Raise</button><button class="b" id="tLower">Lower</button><button class="b" id="tDig">Dig</button><button class="b" id="tRot" title="Rotate view">⟳</button><button class="b" id="tAI">AI</button></div>
 <div id="bpan" class="p2"></div>
 <div id="rob"><div class="m"><i id="mbar"></i></div><div class="p"><div class="t" id="rname">1</div><button class="b" id="rDig">Dig</button><button class="b" id="rCharge">Charge</button><button class="b" id="rStay">Stay</button></div></div>
 <div id="ctx"><button class="b" id="cRot">Rotate</button><button class="b big" id="cGo">Build</button><button class="b" id="cX">Cancel</button></div>
@@ -261,9 +261,12 @@ function bayFor(o,P){if(!P.length)return null;const n=P.length*6;const held=k=>S
  return portPos(P,o.port)}
 function vLocked(x,y){for(let j=-1;j<=0;j++)for(let i=-1;i<=0;i++){const a=x+i,b=y+j;if(occ(a,b)||S.roads.has(a+','+b))return true}return false}
 function tileHigh(x,y){let best=null,bh=S.bh0;for(const[i,j]of[[0,0],[1,0],[0,1],[1,1]]){const vx=x+i,vy=y+j;if(!inV(S.w,vx,vy))continue;const v=gh(S.w,vx,vy);if(v>bh&&!vLocked(vx,vy)){bh=v;best=[vx,vy]}}return best}
-function digTarget(o,fx,fy){const N=S.w.N;let best=null,bd=1e9;for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(occ(x,y)||S.roads.has(x+','+y))continue;const hv=tileHigh(x,y);if(!hv)continue;
+const SR=3;function siteHigh(s){for(let y=s.y-SR;y<=s.y+SR;y++)for(let x=s.x-SR;x<=s.x+SR;x++){if(x<0||y<0||x>=S.w.N||y>=S.w.N||occ(x,y)||S.roads.has(x+','+y))continue;if(tileHigh(x,y))return true}return false}
+function ringPos(o,s){const k=S.bots.indexOf(o);const a=k*2.4;const r=1.3+(k%3)*.35;return{x:Math.max(.3,Math.min(S.w.N-.3,s.x+.5+Math.cos(a)*r)),y:Math.max(.3,Math.min(S.w.N-.3,s.y+.5+Math.sin(a)*r))}}
+function digTarget(o,fx,fy){const N=S.w.N,st=o.site;if(st){fx=st.x+.5;fy=st.y+.5}let best=null,bd=1e9;for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(st&&(Math.abs(x-st.x)>SR||Math.abs(y-st.y)>SR))continue;if(occ(x,y)||S.roads.has(x+','+y))continue;const hv=tileHigh(x,y);if(!hv)continue;
   if(S.bots.some(q=>q!==o&&q.st==='dig'&&q.task&&q.task.x===x&&q.task.y===y))continue;const d=Math.hypot(x+.5-fx,y+.5-fy)-gh(S.w,hv[0],hv[1])*.15;if(d<bd){bd=d;best={x,y}}}return best}
-function startDig(o,t){if(!t){const L=o.lastDig||{x:o.x,y:o.y};t=digTarget(o,L.x,L.y)}if(!t){toast('No high ground left to dig. The pad is flat.');o.st='idle';return false}o.st='dig';o.task=t;o.home={x:t.x+.5,y:t.y+.5};o.dt2=0;return true}
+function startDig(o,t,quiet){if(!t&&o.site){t=digTarget(o);if(!t){const r=ringPos(o,o.site);o.home=r;o.tx=r.x;o.ty=r.y;o.task=null;if(siteHigh(o.site)){o.st='dig';return true}o.st='idle';o.site=null;if(!quiet)toast('Dig site is level with the pad.');return false}}
+ if(!t){const L=o.lastDig||{x:o.x,y:o.y};t=digTarget(o,L.x,L.y)}if(!t){toast('No high ground left to dig. The pad is flat.');o.st='idle';return false}o.st='dig';o.task=t;o.home={x:t.x+.5,y:t.y+.5};o.dt2=0;return true}
 function fxText(x,y,txt,col){S.fx.push({k:'t',x,y,txt,col:col||'#ffe08a',t:0,l:1.6})}
 function botStep(o,dt,P){
  if(o.st==='down'){ // revive if someone charges nearby? only if near pack
@@ -278,10 +281,11 @@ function botStep(o,dt,P){
  if(o.st==='build'){const b=o.task;if(!b||b.bt<=0){o.st='idle';o.task=null;return}
   if(moveTo(o,dt)){b.bt-=dt*.55;o.work=(o.work||0)+dt;if(Math.random()<dt*6)fxSpark(o.x,o.y);
    if(b.bt<=0){b.bt=0;toast(KINDS[b.kind].name+' online.');sfx('done');fxDust(b.x+b.w/2,b.y+b.h/2,12);uiRefresh()}}return}
- if(o.st==='dig'){let t=o.task;if(!t){if(!startDig(o))return;t=o.task}
+ if(o.st==='dig'){let t=o.task;if(!t&&o.site){moveTo(o,dt,1.2);o.wt2=(o.wt2||0)-dt;if(o.wt2<=0){o.wt2=.7;startDig(o,null,true);if(o.st==='idle'&&!S.bots.some(q=>q.site&&q.st==='dig'))toast('Dig site levelled to pad height.')}return}
+  if(!t){if(!startDig(o))return;t=o.task}
   o.tx=t.x+.5;o.ty=t.y+.5;if(!moveTo(o,dt))return;o.lastDig={x:t.x+.5,y:t.y+.5};
   if(o.m<20){toast("Can't dig under 20% maintenance. Repair at the Starship.");o.st='idle';return}
-  const hv=tileHigh(t.x,t.y);if(!hv){const n=digTarget(o,t.x+.5,t.y+.5);if(n){o.task=n;o.home={x:n.x+.5,y:n.y+.5};return}o.st='idle';o.task=null;toast('Optimus '+o.id+' finished. Ground is flat at pad level.');return}
+  const hv=tileHigh(t.x,t.y);if(!hv){const n=digTarget(o,t.x+.5,t.y+.5);if(n){o.task=n;o.home={x:n.x+.5,y:n.y+.5};return}if(o.site){o.task=null;o.wt2=0;return}o.st='idle';o.task=null;toast('Optimus '+o.id+' finished. Ground is flat at pad level.');return}
   o.dt2=(o.dt2||0)+dt;o.m=Math.max(0,o.m-dt*.25);o.work=(o.work||0)+dt;o.e-=dt*.05;
   if(Math.random()<dt*6)fxDebris(o.x,o.y);
   if(o.dt2>1.4){o.dt2=0;if(shape(S.w,hv[0],hv[1],-1)){sfx('dig');fxDust(hv[0],hv[1],6);o.e-=2.2;
@@ -482,6 +486,8 @@ function frame(now){requestAnimationFrame(frame);const dtr=Math.min(.1,(now-(las
  const quad=(x,y,fill,stroke)=>{const q=[[x,y],[x+1,y],[x+1,y+1],[x,y+1]].map(([i,j])=>sp(i,j,gh(S.w,i,j)));cx.fillStyle=fill;poly(q);cx.fill();if(stroke){cx.strokeStyle=stroke;cx.lineWidth=1.2;cx.stroke()}};
  if(S.arm&&S.arm.x!=null&&S.arm.k!=='road'){const K=KINDS[S.arm.k],bad=canPlace(S.arm.k,S.arm.x,S.arm.y);for(let j=0;j<K.h;j++)for(let i=0;i<K.w;i++)quad(S.arm.x+i,S.arm.y+j,bad?'rgba(220,70,50,.4)':'rgba(90,230,150,.4)','rgba(255,255,255,.6)')}
  if(S.arm&&S.arm.k==='road'&&S.arm.hx!=null)quad(S.arm.hx,S.arm.hy,canPlace('road',S.arm.hx,S.arm.hy)?'rgba(220,70,50,.4)':'rgba(90,230,150,.45)','#fff');
+ if(S.site&&S.bots.some(o=>o.site===S.site)){const s=S.site,pl=.5+.5*Math.sin(t*5);for(let j=-SR;j<=SR;j++)for(let i=-SR;i<=SR;i++){const x=s.x+i,y=s.y+j;if(x<0||y<0||x>=S.w.N||y>=S.w.N)continue;if(Math.max(Math.abs(i),Math.abs(j))===SR)quad(x,y,'rgba(255,210,122,.06)')}
+  quad(s.x,s.y,`rgba(255,200,90,${.25+.25*pl})`,'#ffd27a');const c=sp(s.x+.5,s.y+.5);cx.strokeStyle=`rgba(255,220,130,${.6+.4*pl})`;cx.lineWidth=2.5;cx.beginPath();cx.ellipse(c[0],c[1],(14+6*pl)*cam.z,(14+6*pl)*cam.z*SQ,0,0,7);cx.stroke()}
  if(S.dig)quad(S.dig.x,S.dig.y,'rgba(255,210,122,.25)','#ffd27a');
  for(const o of S.bots)if(o.st==='dig'&&o.task)quad(o.task.x,o.task.y,'rgba(255,210,122,.12)','rgba(255,210,122,.55)');
  // objects sorted by view depth
@@ -519,7 +525,7 @@ let hudK='';function hud(){const ct=S.time%DAY,day=ct<DAYLEN;const P=packs();con
  if($('ovMats').style.display==='grid'&&(!window.__mt||performance.now()-window.__mt>400)){window.__mt=performance.now();openMats()}
  {const tot=Math.floor(S.mats.silica);if(window.__ms!=null&&tot>window.__ms){$('bMats')&&$('bMats').animate([{boxShadow:'0 0 0 2px #ffe08a'},{boxShadow:'none'}],400)}window.__ms=tot}
  if(S.sel){$('rob').style.display='flex';$('mbar').style.height=S.sel.m+'%';$('rname').textContent='Optimus '+S.sel.id+' · '+Math.round(S.sel.e)+'%';$('rDig').classList.toggle('on',tool==='dig'||S.sel.st==='dig');$('rStay').classList.toggle('on',S.sel.st==='stay');$('rCharge').classList.toggle('on',S.sel.st==='charge')}else $('rob').style.display='none';
- $('ctx').style.display=S.arm?'flex':'none';$('cGo').style.display=S.arm&&S.arm.k==='road'?'none':'';$('cX').textContent=S.arm&&S.arm.k==='road'?'Done':'Cancel';$('tAI').classList.toggle('on',S.ai);bpanel();$('tRaise').classList.toggle('on',tool==='raise');$('tLower').classList.toggle('on',tool==='lower')}
+ $('ctx').style.display=S.arm?'flex':'none';$('cGo').style.display=S.arm&&S.arm.k==='road'?'none':'';$('cX').textContent=S.arm&&S.arm.k==='road'?'Done':'Cancel';$('tAI').classList.toggle('on',S.ai);bpanel();$('tDig').classList.toggle('on',tool==='digall');$('tRaise').classList.toggle('on',tool==='raise');$('tLower').classList.toggle('on',tool==='lower')}
 function uiRefresh(){}
 let bpK='';function bpanel(){const b=S.selB,e=$('bpan');if(!b||S.arm||(b.kind!=='factory'&&b.kind!=='biodome')){if(bpK){e.style.display='none';bpK=''}return}
  let k=b.kind+b.id+(b.bt>0)+!!b.make;if(b.gh)k+=Math.round(b.gh.grown*20)+'|'+Math.round(b.gh.crop*20)+b.gh.fruit+(b.gh.remain>0);if(k===bpK)return;bpK=k;e.style.display='flex';
@@ -563,9 +569,10 @@ $('pRestart').onclick=()=>{closeOv();startLevel(S.lv[0])};$('pMenu').onclick=()=
 $('eAgain').onclick=()=>{$('ovEnd').style.display='none';startLevel(S.lv[0])};$('eNext').onclick=()=>{$('ovEnd').style.display='none';startLevel(S.lv[0]+1)};
 $('spd').onclick=()=>{speedI=(speedI+1)%SPEEDS.length;$('spd').textContent=SPEEDS[speedI]+'X'};
 $('tRaise').onclick=()=>{tool=tool==='raise'?null:'raise';S.arm=null};$('tLower').onclick=()=>{tool=tool==='lower'?null:'lower';S.arm=null};
-$('rDig').onclick=()=>{if(!S.sel)return;tool='dig';if(startDig(S.sel))toast('Optimus '+S.sel.id+' digging the nearest hill down to pad level. Tap a hill to pick the spot.',4);sfx('sel')};
-$('rCharge').onclick=()=>{if(S.sel){S.sel.st='charge';S.sel.task=null;toast('Optimus '+S.sel.id+' heading to charge.')}};
-$('rStay').onclick=()=>{if(S.sel){S.sel.st=S.sel.st==='stay'?'idle':'stay';S.sel.tx=S.sel.x;S.sel.ty=S.sel.y;S.sel.task=null;toast(S.sel.st==='stay'?'Stay parks us in place.':'Back to work.')}};
+$('rDig').onclick=()=>{if(!S.sel)return;tool='dig';S.arm=null;toast('Tap the land where Optimus '+S.sel.id+' should dig.',4);sfx('sel')};
+$('tDig').onclick=()=>{tool=tool==='digall'?null:'digall';S.arm=null;if(tool)toast('Tap the land to dig there. All robots will come.',4);sfx('sel')};
+$('rCharge').onclick=()=>{if(S.sel){S.sel.site=null;S.sel.st='charge';S.sel.task=null;toast('Optimus '+S.sel.id+' heading to charge.')}};
+$('rStay').onclick=()=>{if(S.sel){S.sel.site=null;S.sel.st=S.sel.st==='stay'?'idle':'stay';S.sel.tx=S.sel.x;S.sel.ty=S.sel.y;S.sel.task=null;toast(S.sel.st==='stay'?'Stay parks us in place.':'Back to work.')}};
 $('cX').onclick=()=>{S.arm=null;toast('Build cancelled.')};$('cRot').onclick=()=>{if(!S.arm)return;const K=KINDS[S.arm.k];if(K.w!==K.h){S.arm.rot=!S.arm.rot;[K.w,K.h]=[K.h,K.w]}};
 $('cGo').onclick=()=>{if(S.arm&&S.arm.x!=null&&placeBuild(S.arm.k,S.arm.x,S.arm.y))S.arm=null};
 // ---------- input ----------
@@ -602,8 +609,10 @@ function tap(sx,sy){if(!S||S.outcome!=='playing')return;const[x,y]=unproj(sx,sy)
  if(S.arm){const K=KINDS[S.arm.k];S.arm.x=Math.max(0,Math.min(N-K.w,Math.round(x-K.w/2)));S.arm.y=Math.max(0,Math.min(N-K.h,Math.round(y-K.h/2)));return}
  const o=botAt(sx,sy);if(o){if(S.sel===o){S.sel=null;tool=null}else{S.sel=o;S.selB=null;if(tool==='dig')tool=null;toast('Optimus '+o.id+' selected · tap again to cancel')}sfx('sel');return}
  if(tx<0||ty<0||tx>=N||ty>=N)return;
- if(tool==='dig'&&S.sel){if(occ(tx,ty)){toast("Can't dig under a building.");return}let t={x:tx,y:ty};if(!tileHigh(tx,ty)){t=digTarget(S.sel,tx+.5,ty+.5);if(t)toast('Already at pad level there. Digging the nearest hill.')}
-  if(startDig(S.sel,t)){S.dig={x:t.x,y:t.y};setTimeout(()=>S&&(S.dig=null),600);toast('Optimus '+S.sel.id+' digging layer by layer.')}tool=null;sfx('sel');return}
+ if((tool==='dig'&&S.sel)||tool==='digall'){if(occ(tx,ty)){toast("Can't dig under a building. Tap open ground.");return}
+  const site={x:tx,y:ty},team=tool==='dig'?[S.sel]:S.bots.filter(o=>o.st!=='down');S.site=site;
+  for(const o of team){o.site=site;o.task=null;o.wt2=0;if(o.st==='charge'){o.resume='dig';continue}o.st='dig';startDig(o,null,true)}
+  toast(siteHigh(site)?(team.length>1?'All '+team.length+' robots digging here.':'Optimus '+team[0].id+' digging here.'):'Already flat here. Robots standing by.');tool=null;sfx('sel');return}
  if(tool==='raise'||tool==='lower'){const v=nearestV(sx,sy);if(v&&shape(S.w,v[0],v[1],tool==='raise'?1:-1))sfx('shape');return}
  const now=performance.now();if(now-lastTap.t<320&&Math.hypot(sx-lastTap.x,sy-lastTap.y)<30){gather(x,y);lastTap.t=0;return}lastTap={t:now,x:sx,y:sy};
  const b=occ(tx,ty);if(b&&b!==S.ship){S.selB=S.selB===b?null:b;const K=KINDS[b.kind];toast(K.name+(b.bt>0?' under construction.':b.kind==='pack'?' · battery '+Math.round(b.bat)+'%':b.kind==='solar'&&b.dust>.1?' · dusty, tap again to clean':' online.'));
@@ -611,7 +620,7 @@ function tap(sx,sy){if(!S||S.outcome!=='playing')return;const[x,y]=unproj(sx,sy)
  if(b===S.ship){toast(S.sections+' Starship sections left for building.');return}
  if(S.sel){S.sel=null;tool=null}else toast('Double-tap the land to summon all Optimus.')}
 function paintRoad(sx,sy){const[x,y]=unproj(sx,sy);const tx=Math.floor(x),ty=Math.floor(y);S.arm.hx=tx;S.arm.hy=ty;if(S.roads.has(tx+','+ty))return;const e=canPlace('road',tx,ty);if(e){if(S.arm.lastE!==tx+','+ty){S.arm.lastE=tx+','+ty;toast(e==='Flatten before you build.'?'Roads need flat squares.':e)}return}placeBuild('road',tx,ty)}
-function gather(x,y){for(const o of S.bots){if(o.st==='down'||o.st==='charge')continue;o.st='gather';o.task=null;o.tx=x+(Math.random()-.5)*1.5;o.ty=y+(Math.random()-.5)*1;o.home={x:o.tx,y:o.ty};setTimeout(()=>{if(o.st==='gather')o.st='idle'},12000)}toast('All Optimus grouping up.');sfx('sel')}
+function gather(x,y){for(const o of S.bots){if(o.st==='down'||o.st==='charge')continue;o.site=null;o.st='gather';o.task=null;o.tx=x+(Math.random()-.5)*1.5;o.ty=y+(Math.random()-.5)*1;o.home={x:o.tx,y:o.ty};setTimeout(()=>{if(o.st==='gather')o.st='idle'},12000)}toast('All Optimus grouping up.');sfx('sel')}
 // ---------- minimap ----------
 const mc=$('mini'),mg=mc.getContext('2d');mc.width=100;mc.height=80;
 function drawMini(){if(!S||getComputedStyle(mc).display==='none')return;const N=S.w.N;const s=Math.min(100,80)/N;mg.fillStyle='#07080c';mg.fillRect(0,0,100,80);
@@ -646,7 +655,7 @@ function resize(){DPR=Math.min(1.5,devicePixelRatio||1);W=innerWidth;H=innerHeig
 window.__cam=cam;window.__sp=(x,y)=>sp(x,y,hAt(S.w,Math.max(0,Math.min(S.w.N-.01,x)),Math.max(0,Math.min(S.w.N-.01,y))));
 // debug hook
 window.__om={get S(){return S},go,step:(sec)=>{for(let i=0;i<sec*15;i++)step(1/15)},give(m){for(const k in m)S.mats[k]+=m[k]},placeBuild,canPlace,shape,tileFlat:(x,y)=>tileFlat(S.w,x,y),
- factoryMake,greenhouse,savePad,loadPad,startDig,digTarget,tileHigh,fps:()=>fpsA.length/fpsA.reduce((a,b)=>a+b,0),flatten(x,y,w,h,v){for(let j=0;j<=h;j++)for(let i=0;i<=w;i++)setH(S.w,x+i,y+j,v);S.w.rev++}};
+ factoryMake,greenhouse,savePad,loadPad,startDig,digTarget,tileHigh,siteHigh,fps:()=>fpsA.length/fpsA.reduce((a,b)=>a+b,0),flatten(x,y,w,h,v){for(let j=0;j<=h;j++)for(let i=0;i<=w;i++)setH(S.w,x+i,y+j,v);S.w.rev++}};
 const q=new URLSearchParams(location.search);if(q.get('level')){go(Math.max(1,Math.min(LEVELS.length,+q.get('level')||1)))}else showTitle();
 requestAnimationFrame(frame);
 </script></body></html>
