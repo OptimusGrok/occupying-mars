@@ -177,6 +177,7 @@ function renderTerrain(){
   const r=rng(wx*977+wy*131+7);g.fillStyle='rgba(60,22,8,.18)';for(let i=0;i<3;i++){g.fillRect(pa[0]+r()*T,pa[1]+r()*T*SQ-(a-c)*0,1.2,1.2)}
   g.fillStyle='rgba(255,220,180,.10)';g.fillRect(pa[0]+r()*T,pa[1]+r()*T*SQ,1.2,1.2);
   const flat=a===b&&a===c&&a===d;
+  if(GRID&&flat){g.strokeStyle='rgba(255,236,210,.28)';g.lineWidth=.8;g.beginPath();g.moveTo(pa[0],pa[1]);g.lineTo(pb[0],pb[1]);g.lineTo(pd[0],pd[1]);g.lineTo(pc[0],pc[1]);g.closePath();g.stroke()}
   if(S.roads.has(wx+','+wy)&&flat){continue}
   if(flat&&n0>.9){ // crater
    const cx=pa[0]+T*.5,cy=pa[1]+T*SQ*.5,R=T*(.25+(n0-.9)*3);g.fillStyle='rgba(70,28,12,.55)';g.beginPath();g.ellipse(cx,cy,R,R*SQ,0,0,7);g.fill();
@@ -188,7 +189,7 @@ function renderTerrain(){
    g.fillStyle='#5e2c16';g.beginPath();g.moveTo(cx-s,cy);g.lineTo(cx-s*.4,cy-s*.9);g.lineTo(cx+s*.6,cy-s*.7);g.lineTo(cx+s,cy);g.closePath();g.fill();
    g.fillStyle='#a8603a';g.beginPath();g.moveTo(cx-s*.4,cy-s*.9);g.lineTo(cx+s*.6,cy-s*.7);g.lineTo(cx+s*.1,cy-s*.3);g.closePath();g.fill()}
  }}
- if(GRID){g.strokeStyle='rgba(255,236,210,.28)';g.lineWidth=.8;g.beginPath();for(let v=0;v<=N;v++)for(let u=0;u<=N;u++){const p=P(u,v);if(u<N){const q=P(u+1,v);g.moveTo(p[0],p[1]);g.lineTo(q[0],q[1])}if(v<N){const q=P(u,v+1);g.moveTo(p[0],p[1]);g.lineTo(q[0],q[1])}}g.stroke()}
+
  // roads overlay (world tiles)
  for(const k of S.roads){const[x,y]=k.split(',').map(Number);const h0=gh(w,x,y);const q=[[x,y],[x+1,y],[x+1,y+1],[x,y+1]].map(([i,j])=>{const[u,v]=rv(i,j);return[u*T,v*T*SQ-h0*T*HZ+OY]});
   g.fillStyle='#3a3836';g.beginPath();q.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.closePath();g.fill();g.strokeStyle='#5a5652';g.lineWidth=1;g.stroke();
