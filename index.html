@@ -45,6 +45,19 @@ canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
 .card{box-shadow:0 20px 60px rgba(0,0,0,.6)}
 #mini{position:fixed;inset:auto;top:calc(46px + env(safe-area-inset-top));right:52px;width:100px;height:80px;border:1px solid #2b2f38;border-radius:6px;z-index:5;display:none;position:fixed}
 @media (min-width:900px) and (min-height:600px){#mini{display:block}}
+#obj{position:fixed;left:8px;bottom:calc(150px + env(safe-area-inset-bottom));z-index:5;width:172px;background:rgba(16,18,24,.84);border:1px solid #2b2f38;border-radius:8px;font-size:11px;line-height:1.4;padding:6px 8px;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+#objH{display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:.16em;color:#9a958c;cursor:pointer;min-height:20px}#objH:after{content:'–';font-size:14px}#obj.min #objH:after{content:'+'}#obj.min #objL{display:none}
+#objL b{color:#ffe08a;font-weight:600}#objL .ok{color:#6ff0a8}#objL .w{color:#f0a070}#objL .d{color:#9a958c}
+#roster{position:fixed;left:8px;bottom:calc(112px + env(safe-area-inset-bottom));z-index:5;display:flex;gap:3px;max-width:calc(100vw - 122px);overflow-x:auto;scrollbar-width:none}
+.rc{flex:none;width:30px;height:32px;padding:2px 0 0;border-radius:6px;background:rgba(16,18,24,.84);border:1px solid #2b2f38;color:#e8e4dc;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;font:600 9px system-ui;position:relative}
+.rc svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.6}.rc i{position:absolute;left:3px;right:3px;bottom:2px;height:3px;background:#222;border-radius:2px;overflow:hidden}.rc i b{display:block;height:100%}
+.rc.on{border-color:#6ff0a8}.rc.j-dig{color:#ffd27a}.rc.j-charge{color:#7fd0ff}.rc.j-build{color:#ffb070}.rc.j-clean{color:#9fe6ff}.rc.j-down{color:#e0604a}.rc .n{line-height:10px}
+#tut{position:fixed;left:50%;transform:translateX(-50%);top:calc(140px + env(safe-area-inset-top));width:min(300px,86vw);z-index:7;display:none;background:rgba(14,15,19,.94);border:1px solid #c45c3a;border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.45}
+#tutH{font-size:10px;letter-spacing:.16em;color:#e08a66;margin-bottom:4px}#tut .row{display:flex;gap:6px;justify-content:flex-end;margin-top:8px}#tut .b{min-height:34px}
+.lvl .b small.st{display:block;font-size:8px;color:#ffd27a;letter-spacing:0}.lvl .b{flex-direction:column}
+#eStars{font-size:34px;color:#ffd27a;letter-spacing:.1em}
+@media (max-width:400px){#bat{width:30px}#clock{gap:5px;padding:0 7px}#top{gap:5px}#top .b{padding:0 9px}#cnt{padding:0 2px}}
+@media (max-height:500px){#obj{bottom:calc(150px + env(safe-area-inset-bottom));width:190px}}
 </style></head><body>
 <canvas id="c"></canvas>
 <div id="top"><button class="b" id="bBuild">Build</button><button class="b" id="bMats">Materials</button><span id="cnt">6</span>
@@ -53,17 +66,18 @@ canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
 <div id="toast"></div>
 <div id="tools"><button class="b" id="tRaise">Raise</button><button class="b" id="tLower">Lower</button><button class="b" id="tDig">Dig</button><button class="b" id="tRot" title="Rotate view">⟳</button><button class="b" id="tAI">AI</button></div>
 <div id="bpan" class="p2"></div>
-<div id="rob"><div class="m"><i id="mbar"></i></div><div class="p"><div class="t" id="rname">1</div><button class="b" id="rDig">Dig</button><button class="b" id="rCharge">Charge</button><button class="b" id="rStay">Stay</button></div></div>
+<div id="rob"><div class="m"><i id="mbar"></i></div><div class="p"><div class="t" id="rname">1</div><button class="b" id="rDig">Dig</button><button class="b" id="rCharge">Charge</button><button class="b" id="rClean">Clean</button><button class="b" id="rStay">Stay</button></div></div>
 <div id="ctx"><button class="b" id="cRot">Rotate</button><button class="b big" id="cGo">Build</button><button class="b" id="cX">Cancel</button></div>
 <button class="b" id="spd">1X</button>
 <div id="joy"><div id="knob">⟳</div></div>
 <div class="ov" id="ovBuild"><div class="card"><h3>BUILD</h3><div id="blist"></div></div></div>
 <div class="ov" id="ovMats"><div class="card"><h3>MATERIALS</h3><div id="mlist"></div><p style="font-size:11px;color:#9a958c;line-height:1.5">Digging hills yields regolith oxides. Ice wells pull water ice and dry ice. A Tesla factory needs those plus extra iron and lime.</p></div></div>
+<div id="obj"><div id="objH">OBJECTIVE</div><div id="objL"></div></div><div id="roster"></div><div id="tut"><div id="tutH"></div><div id="tutP"></div><div class="row"><button class="b" id="tutS">Skip</button><button class="b big" id="tutN">Next</button></div></div>
 <button class="b" id="tSec" title="Secret menu" aria-label="Secret menu">✦</button>
 <div class="ov" id="ovSec"><div class="card" style="text-align:center;max-width:300px;width:100%"><h3 style="letter-spacing:.18em;font-size:12px;opacity:.7">MENU</h3><div style="display:flex;flex-direction:column;gap:8px"><button class="b" id="sGrid">Grid</button><button class="b" id="sAI">Colony AI</button><small style="letter-spacing:.16em;opacity:.6;margin-top:4px">FAST FORWARD</small><div id="sSpd" style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px"></div><small style="letter-spacing:.16em;opacity:.6;margin-top:4px">INSTANT BUILD</small><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px"><button class="b" data-k="refinery">Refinery</button><button class="b" data-k="icewell">Ice well</button><button class="b" data-k="factory">Tesla factory</button><button class="b" data-k="launchpad">Launch pad</button><button class="b" data-k="biodome" style="grid-column:span 2">Bio Dome</button></div><button class="b" id="sClose" style="margin-top:6px">Close</button></div></div></div>
-<div class="ov" id="ovPause"><div class="card" style="text-align:center"><h3>PAUSED</h3><div style="display:flex;flex-direction:column;gap:8px"><button class="b" id="pRes">Resume</button><button class="b" id="pMute">Mute</button><button class="b" id="pAI">Colony AI: off</button><button class="b" id="pSave">Save pad</button><button class="b" id="pLoad">Load pad</button><button class="b" id="pRestart">Restart level</button><button class="b" id="pMenu">Campaign</button></div></div></div>
+<div class="ov" id="ovPause"><div class="card" style="text-align:center"><h3>PAUSED</h3><div style="display:flex;flex-direction:column;gap:8px"><button class="b" id="pRes">Resume</button><button class="b" id="pMute">Mute</button><button class="b" id="pTut">Tutorial tips</button><button class="b" id="pAI">Colony AI: off</button><button class="b" id="pSave">Save pad</button><button class="b" id="pLoad">Load pad</button><button class="b" id="pRestart">Restart level</button><button class="b" id="pMenu">Campaign</button></div></div></div>
 <div class="ov" id="ovPad"><div class="card"><h3 id="padH">PAD BAYS</h3><div id="padL"></div><div style="text-align:center;margin-top:10px"><button class="b" id="padBack">Back</button></div></div></div>
-<div class="ov" id="ovEnd"><div class="card" style="text-align:center"><p id="eK" style="font-size:11px;letter-spacing:.2em;color:#9a958c;margin:0">OCCUPYING MARS</p><h2 id="eT" style="font-family:Georgia,serif;font-weight:400;font-size:34px;margin:8px 0"></h2><p id="eM" style="color:#9a958c;font-size:13px"></p><div style="display:flex;gap:8px;justify-content:center"><button class="b big" id="eNext">Next world</button><button class="b" id="eAgain">Play again</button></div></div></div>
+<div class="ov" id="ovEnd"><div class="card" style="text-align:center"><p id="eK" style="font-size:11px;letter-spacing:.2em;color:#9a958c;margin:0">OCCUPYING MARS</p><h2 id="eT" style="font-family:Georgia,serif;font-weight:400;font-size:34px;margin:8px 0"></h2><div id="eStars"></div><p id="eStT" style="font-size:11px;color:#9a958c;margin:2px 0"></p><p id="eM" style="color:#9a958c;font-size:13px"></p><div style="display:flex;gap:8px;justify-content:center"><button class="b big" id="eNext">Next world</button><button class="b" id="eAgain">Play again</button></div></div></div>
 <div id="title"><h1>Occupying Mars</h1><p>Optimus and a Starship. Shape the red land.</p><button class="b big" id="tPlay">Play</button><div style="height:14px"></div><div class="lvl" id="tLv" style="width:min(340px,92vw)"></div></div>
 <script>
 const LEVELS=[[1,"First Clay",32,1101,"valley",8,22],[2,"The Bank",34,2214,"bridge",7,17],[3,"High Ground",34,3340,"highground",9,24],[4,"Scattered Seed",36,4402,"scatter",8,26],[5,"Green Isle",32,5519,"islands",8,22],[6,"Dune Wake",36,6611,"ridge",8,26],[7,"The Well",34,7728,"basin",8,24],[8,"Salt Canyon",36,8833,"canyon",7,18],[9,"Scorched March",36,9901,"valley",8,27],[10,"Red Horizon",38,10107,"highground",9,28],[11,"First Frost",36,11121,"ridge",8,26],[12,"Black Lake",36,12202,"lake",8,26],[13,"The Glacier",38,13318,"highground",9,28],[14,"White Peak",36,14444,"caldera",8,26],[15,"Gale",38,15555,"scatter",8,28],[16,"The Mire",36,16661,"basin",8,26],[17,"Reed War",36,17772,"islands",7,27],[18,"Rot",38,18883,"valley",8,28],[19,"Quagmire",38,19994,"scatter",8,29],[20,"Bane",38,20020,"lake",8,28],[21,"Ember",36,21121,"ridge",8,26],[22,"The Caldera",38,22232,"caldera",8,28],[23,"Rivers of Fire",40,23343,"canyon",8,20],[24,"Last War",40,24444,"valley",9,30]];
@@ -193,7 +207,7 @@ function startLevel(id){
  S.built.push({id:S.nid++,kind:'solar',x:bx-2,y:by+6,w:2,h:3,bt:0,dust:0});S.built.push({id:S.nid++,kind:'solar',x:bx,y:by+6,w:2,h:3,bt:0,dust:0});
  for(let i=0;i<6;i++)S.bots.push({id:i+1,x:bx-1.5+i*.6,y:by+(i<3?2:9.6),tx:null,ty:null,e:100,m:100,st:'idle',task:null,face:0,wt:Math.random()*3,carry:0});
  cam.x=(bx+3)*T;cam.y=(by+5)*T*SQ-bh*T*HZ;cam.z=Math.max(.7,Math.min(1.6,Math.min(W,H)/(14*T)));if(W<=H*1.2){const top=(by+5.5)*T*SQ-bh*T*HZ-T*17;const lim=H*.12;if((top-cam.y)*cam.z+H/2<lim)cam.y=top+(H/2-lim)/cam.z;const bot=(by+6)*T*SQ;if((bot-cam.y)*cam.z+H/2>H-140){cam.z=Math.max(.5,(H*.88-140)/(bot-top));cam.y=top+(H/2-lim)/cam.z}}if(W>H*1.2){const top=Math.min(-MAXH*T*HZ,(by+5.5)*T*SQ-bh*T*HZ-T*16),bot=N*T*SQ+T;cam.z=Math.max(.45,Math.min(W*.82/(N*T),(H-70)/(bot-top)));cam.x=N*T/2;cam.y=(top+bot)/2+10/cam.z}
- S.bh0=bh;tcRev=-1;ROT=0;tool=null;S.arm=null;uiRefresh();toast('Six Optimus units and a Starship on the pad. Shape the red land.',5);
+ S.bh0=bh;lvSetup();tcRev=-1;ROT=0;tool=null;S.arm=null;uiRefresh();toast('Six Optimus units and a Starship on the pad. Shape the red land.',5);
  setTimeout(()=>S&&S.outcome==='playing'&&toast('Tap Raise or Lower, or hold the land. Tap an Optimus to give it work.',5),6000);}
 function occ(x,y,ignore){for(const b of S.built){if(b===ignore)continue;if(x>=b.x&&x<b.x+b.w&&y>=b.y&&y<b.y+b.h)return b}
  if(Math.abs(x+.5-S.ship.x)<2&&Math.abs(y+.5-S.ship.y)<2)return S.ship;return null}
@@ -236,7 +250,7 @@ function step(dt){
  if(was&&!day){toast('Night. Solar charging stops.');sfx('night')}if(!was&&day)toast('Day. Solar charging resumes.');
  // storm
  const ct=S.time%DAY;if(ct>=S.stormAt&&ct<S.stormAt+dt&&S.t>10){S.storm=40;toast('Sandstorm hitting the pad.');sfx('storm')}
- if(S.storm>0){S.storm-=dt;for(const b of S.built)if(b.kind==='solar')b.dust=Math.min(.9,b.dust+dt*.03);if(S.storm<=0)toast('Sandstorm clearing. Solar farm dusty. Clean the panels.')}
+ if(S.storm>0){S.storm-=dt;for(const b of S.built)if(b.kind==='solar')b.dust=Math.min(.9,b.dust+dt*.06);if(S.storm<=0)toast('Sandstorm clearing. Solar farm dusty. Robots will clean the panels.')}
  // power
  const P=packs();const sol=S.built.filter(b=>b.kind==='solar'&&b.bt<=0);
  let inp=day&&S.storm<=0?sol.reduce((s,b)=>s+.12*(1-b.dust),0):0;
@@ -255,15 +269,16 @@ function step(dt){
   if(b.kind==='factory'&&b.make){b.make.t-=dt;if(b.make.t<=0){spawnFrom(b,b.make.k);b.make=null}}}
  if(S.ai){S.aiT-=dt;if(S.aiT<=0){S.aiT=1.2;colonyAI()}}
  // build progress done in botStep. landing
- if(!S.landing&&count('launchpad')&&count('biodome')){S.landing=true;S.landT=0;toast('Humans are coming. Starship inbound.');sfx('inbound')}
- if(S.landing){S.landT=Math.min(1,S.landT+dt/16);if(S.landT>=1&&S.outcome==='playing'){S.outcome='won';fxDust(S.lp.x+2,S.lp.y+2,30);toast('Starship on the pad.');sfx('win');setTimeout(()=>showEnd(true),1800);try{localStorage.setItem('om.done',Math.max(+localStorage.getItem('om.done')||0,S.lv[0]))}catch(e){}}}
+ if(!S.landing&&count('launchpad')&&count('biodome')){S.landing=true;S.landT=0;toast('Humans are coming. Starship inbound.');sfx('inbound');sfx('roar')}
+ if(S.landing){S.landT=Math.min(1,S.landT+dt/16);if(S.landT>=1&&S.outcome==='playing'){S.outcome='won';starsWin();fxDust(S.lp.x+2,S.lp.y+2,30);toast('Starship on the pad.');sfx('win');setTimeout(()=>showEnd(true),1800);try{localStorage.setItem('om.done',Math.max(+localStorage.getItem('om.done')||0,S.lv[0]))}catch(e){}}}
  if(S.landing&&!S.lp)S.lp=S.built.find(b=>b.kind==='launchpad'&&b.bt<=0);
+ hazStep(dt);
  // lose
  S.grace-=dt;if(S.grace<0&&S.bots.every(o=>o.st==='down')){S.outcome='lost';toast('Your Optimus units are gone.');setTimeout(()=>showEnd(false),1200)}
  for(const f of S.fx){f.t+=dt}S.fx=S.fx.filter(f=>f.t<f.l);}
 function moveTo(o,dt,sp=1.6){const dx=o.tx-o.x,dy=o.ty-o.y,d=Math.hypot(dx,dy);if(d<.08)return true;
  const nh=hAt(S.w,Math.max(0,Math.min(S.w.N-.01,o.x+dx/d*.3)),Math.max(0,Math.min(S.w.N-.01,o.y+dy/d*.3))),ch=hAt(S.w,o.x,o.y);
- const s=sp*(nh>ch+.6?.55:1)*dt;const k=Math.min(1,s/d);o.x+=dx*k;o.y+=dy*k;o.vx=dx/d;o.vy=dy/d;o.walk=(o.walk||0)+s*6;return d<=s}
+ const s=sp*(nh>ch+.6?.55:1)*dt;const k=Math.min(1,s/d);o.x+=dx*k;o.y+=dy*k;o.vx=dx/d;o.vy=dy/d;const w0=o.walk||0;o.walk=w0+s*6;if(Math.floor(o.walk/Math.PI)!==Math.floor(w0/Math.PI))sfx('step');return d<=s}
 function portPos(P,k){const p=P[Math.floor(k/6)];if(!p)return null;const i=k%6;return{x:p.x+.35+i*(p.w-.7)/5,y:p.y+1.25,p,i}}
 function bayFor(o,P){if(!P.length)return null;const n=P.length*6;const held=k=>S.bots.some(q=>q!==o&&q.st==='charge'&&q.port===k);
  if(o.port==null||o.port>=n||held(o.port)){o.port=null;if(o.id-1<n&&!held(o.id-1))o.port=o.id-1;else for(let k=0;k<n;k++)if(!held(k)&&!S.bots.some(q=>q.id-1===k&&q.st==='charge')){o.port=k;break}}
@@ -287,9 +302,10 @@ function botStep(o,dt,P){
  if(o.st==='charge'){const b=bayFor(o,P);if(!b){o.st='idle';return}o.tx=b.x;o.ty=b.y;
   o.plug=false;if(moveTo(o,dt)&&!b.queue){o.plug=true;const p=b.p;if(p.bat>0){const a=Math.min(dt*4,100-o.e);o.e+=a;p.bat=Math.max(0,p.bat-a*.06)}o.m=Math.min(100,o.m+dt*2);
    if(o.e>=99.5&&o.m>=99){o.e=100;o.plug=false;o.port=null;if(o.resume==='dig'){o.resume=null;o.st='idle';if(startDig(o))toast('Optimus '+o.id+' charged. Back to digging.')}else{o.st='idle';toast('Optimus '+o.id+' fully charged.')}}}return}
+ if(o.st==='clean'){cleanStep(o,dt);return}
  if(o.st==='stay'||o.st==='gather'){if(o.tx!=null)moveTo(o,dt);return}
  if(o.st==='build'){const b=o.task;if(!b||b.bt<=0){o.st='idle';o.task=null;return}
-  if(moveTo(o,dt)){b.bt-=dt*.55;o.work=(o.work||0)+dt;if(Math.random()<dt*6)fxSpark(o.x,o.y);
+  if(moveTo(o,dt)){b.bt-=dt*.55;o.work=(o.work||0)+dt;if(Math.random()<dt*6){fxSpark(o.x,o.y);sfx('build')}
    if(b.bt<=0){b.bt=0;toast(KINDS[b.kind].name+' online.');sfx('done');fxDust(b.x+b.w/2,b.y+b.h/2,12);uiRefresh()}}return}
  if(o.st==='dig'){let t=o.task;if(!t&&o.site){moveTo(o,dt,1.2);o.wt2=(o.wt2||0)-dt;if(o.wt2<=0){o.wt2=.7;startDig(o,null,true);if(o.st==='idle'&&!S.bots.some(q=>q.site&&q.st==='dig'))toast('Dig site levelled to pad height.')}return}
   if(!t){if(!startDig(o))return;t=o.task}
@@ -300,10 +316,11 @@ function botStep(o,dt,P){
   if(Math.random()<dt*6)fxDebris(o.x,o.y);
   if(o.dt2>1.4){o.dt2=0;if(shape(S.w,hv[0],hv[1],-1)){sfx('dig');fxDust(hv[0],hv[1],6);o.e-=2.2;
     const ref=(count('refinery')?1.5:1)*(S.starlink?1.2:1)*(1+.12*S.trucks.length);let k=0;
-    for(const m of MATS)if(m[3]){const v=m[3]*.6*ref;S.mats[m[0]]+=v;if(k<2)S.fx.push({k:'t',x:o.x,y:o.y,txt:'+'+v.toFixed(1)+' '+m[1].split(' ')[0],col:k?'#ffb070':'#ffe08a',t:-k*.25,l:1.6});k++}
-    S.dug=(S.dug||0)+1}else{o.task=null}}
+    for(const m of MATS)if(m[3]){const v=m[3]*.6*ref;S.mats[m[0]]+=v;if(k<2)S.fx.push({k:'t',x:o.x,y:o.y,txt:'+'+v.toFixed(1)+' '+m[1].split(' ')[0],col:k?'#ffb070':'#ffe08a',t:-k*.3,l:2.2});k++}
+    if(S.ice&&S.ice.has(t.x+','+t.y)){const wv=3*ref;S.mats.water+=wv;S.mats.carbon+=wv*.4;S.fx.push({k:'t',x:o.x,y:o.y,txt:'+'+wv.toFixed(1)+' Ice',col:'#bfefff',t:-.5,l:2.2})}S.dug=(S.dug||0)+1}else{o.task=null}}
   return}
  // idle wander
+ if(autoClean(o))return;
  o.wt-=dt;if(o.wt<=0||o.tx==null){o.wt=3+Math.random()*5;const c=o.home||(o.home={x:o.x,y:o.y});o.tx=Math.max(.5,Math.min(S.w.N-.5,c.x+(Math.random()-.5)*3));o.ty=Math.max(.5,Math.min(S.w.N-.5,c.y+(Math.random()-.5)*2))}
  moveTo(o,dt,.6);}
 function fxDust(x,y,n){for(let i=0;i<n;i++)S.fx.push({k:'d',x:x+(Math.random()-.5),y:y+(Math.random()-.5)*.6,vx:(Math.random()-.5)*.8,vy:-Math.random()*.6,t:0,l:1+Math.random()})}
@@ -340,17 +357,17 @@ function colonyAI(){const P=packs();
  if(need&&!S.built.some(b=>b.bt>0)&&!prereq(need)&&!lacks(KINDS[need].cost).length){const s=findSite(need,true);
   if(s&&s.lev){const K=KINDS[need];const hh=gh(S.w,s.x,s.y);for(let j=0;j<=K.h;j++)for(let i=0;i<=K.w;i++)setH(S.w,s.x+i,s.y+j,hh);fixAll(S.w);S.w.rev++;fxDust(s.x+K.w/2,s.y+K.h/2,10)}
   if(s&&!canPlace(need,s.x,s.y))placeBuild(need,s.x,s.y)}
- const c=baseC();for(const o of S.bots){if(o.st!=='idle'&&o.st!=='gather'&&o.st!=='stay')continue;if(o.m<25)continue;
+ const c=baseC();for(const o of S.bots){if(o.st!=='idle'&&o.st!=='gather'&&o.st!=='stay')continue;if(o.m<25)continue;if(autoClean(o))continue;
   let best=null,bd=1e9;for(let y=1;y<S.w.N-1;y++)for(let x=1;x<S.w.N-1;x++){if(tileFlat(S.w,x,y)>=0||occ(x,y)||S.roads.has(x+','+y))continue;if(S.bots.some(q=>q.task&&q.task.x===x&&q.task.y===y))continue;
    const d=Math.hypot(x-c.x,y-c.y)+Math.hypot(x-o.x,y-o.y)*.5;if(d<bd){bd=d;best={x,y}}}
   if(best){o.st='dig';o.task=best;o.home={x:best.x+.5,y:best.y+.5}}}}
 // ---------- pad saves ----------
-function savePad(slot){try{const d={v:2,lv:S.lv[0],h:Array.from(S.w.h),built:S.built.map(b=>({...b,make:b.make||null})),bots:S.bots.map(o=>({...o,task:o.task&&o.task.id?{bid:o.task.id}:o.task,home:o.home})),
+function savePad(slot){try{const d={v:2,lvt:S.t,lv:S.lv[0],h:Array.from(S.w.h),built:S.built.map(b=>({...b,make:b.make||null})),bots:S.bots.map(o=>({...o,task:o.task&&o.task.id?{bid:o.task.id}:o.task,home:o.home})),
  mats:S.mats,time:S.time,sections:S.sections,roads:[...S.roads],trucks:S.trucks,nid:S.nid,starlink:S.starlink,landing:S.landing,landT:S.landT,savedAt:Date.now()};
  localStorage.setItem('om.pad.'+slot,JSON.stringify(d));toast('Pad written to bay '+slot+'.');return true}catch(e){toast('Could not write the pad log.');return false}}
 function loadPad(slot){let d;try{d=JSON.parse(localStorage.getItem('om.pad.'+slot))}catch(e){}if(!d){toast('Bay '+slot+' is empty.');return false}{const L=LEVELS.find(l=>l[0]===d.lv)||LEVELS[0],V=Math.round(L[2]*1.3)+1;if(!d.h||d.h.length!==V*V){toast('That pad log is from an older, smaller map. It cannot be restored.');return false}}
  startLevel(d.lv);S.w.h.set(d.h);S.w.rev++;S.built=d.built;S.bots=d.bots.map(o=>{if(o.task&&o.task.bid)o.task=S.built.find(b=>b.id===o.task.bid)||null;return o});
- Object.assign(S,{mats:d.mats,time:d.time,sections:d.sections,roads:new Set(d.roads),trucks:d.trucks,nid:d.nid,starlink:d.starlink,landing:d.landing,landT:d.landT||0});S.lp=null;toast('Pad restored from bay '+slot+'.');return true}
+ Object.assign(S,{mats:d.mats,time:d.time,sections:d.sections,roads:new Set(d.roads),trucks:d.trucks,nid:d.nid,starlink:d.starlink,landing:d.landing,landT:d.landT||0});if(d.lvt!=null)S.t=d.lvt;S.lp=null;toast('Pad restored from bay '+slot+'.');return true}
 function padInfo(slot){try{const d=JSON.parse(localStorage.getItem('om.pad.'+slot));return d?{lv:d.lv,at:d.savedAt}:null}catch(e){return null}}
 function erasePad(slot){try{localStorage.removeItem('om.pad.'+slot);toast('Bay '+slot+' wiped.')}catch(e){toast('Could not erase that bay.')}}
 let VA=0;function setVA(){cx.setTransform(DPR,0,0,DPR,0,0);if(VA){cx.translate(W/2,H/2);cx.scale(1,SQ);cx.rotate(VA);cx.scale(1,1/SQ);cx.translate(-W/2,-H/2)}}
@@ -491,13 +508,14 @@ function frame(now){requestAnimationFrame(frame);const dtr=Math.min(.1,(now-(las
  // sun / night factors
  const ct=S.time%DAY;let nk=0;if(ct>=DAYLEN)nk=Math.min(1,(ct-DAYLEN)/25,(DAY-ct)/25);S.nightK=nk;const dk=ct<DAYLEN?ct/DAYLEN:0;
  const ang=dk*Math.PI;const sx0=-Math.cos(ang),[su,sv]=dirV(sx0,.3);SUN=[su*(1.2-Math.sin(ang)*.7),.35+(1-Math.sin(ang))*.3,ct<DAYLEN?Math.min(1,Math.sin(ang)*4)*(S.storm>0?.3:1):0];S.lights=[];
- cx.setTransform(DPR,0,0,DPR,0,0);const t=now/1000;drawSky(t);
+ cx.setTransform(DPR,0,0,DPR,0,0);const t=now/1000;const shk=S.shake>0?S.shake*S.shake*7/cam.z:0,shx=(Math.random()-.5)*shk,shy=(Math.random()-.5)*shk;cam.x+=shx;cam.y+=shy;if(S.shake>0)S.shake=Math.max(0,S.shake-dtr*1.6);drawSky(t);
  setVA();const o0=wp(0,0,0);const ox=(o0[0]-cam.x)*cam.z+W/2,oy=(o0[1]-cam.y)*cam.z+H/2;cx.drawImage(tc,ox,oy-OY*cam.z,tc.width*cam.z,tc.height*cam.z);cx.setTransform(DPR,0,0,DPR,0,0);
  const quad=(x,y,fill,stroke)=>{const q=[[x,y],[x+1,y],[x+1,y+1],[x,y+1]].map(([i,j])=>sp(i,j,gh(S.w,i,j)));cx.fillStyle=fill;poly(q);cx.fill();if(stroke){cx.strokeStyle=stroke;cx.lineWidth=1.2;cx.stroke()}};
  if(S.arm&&S.arm.x!=null&&S.arm.k!=='road'){const K=KINDS[S.arm.k],bad=canPlace(S.arm.k,S.arm.x,S.arm.y);for(let j=0;j<K.h;j++)for(let i=0;i<K.w;i++)quad(S.arm.x+i,S.arm.y+j,bad?'rgba(220,70,50,.4)':'rgba(90,230,150,.4)','rgba(255,255,255,.6)')}
  if(S.arm&&S.arm.k==='road'&&S.arm.hx!=null)quad(S.arm.hx,S.arm.hy,canPlace('road',S.arm.hx,S.arm.hy)?'rgba(220,70,50,.4)':'rgba(90,230,150,.45)','#fff');
  if(S.site&&S.bots.some(o=>o.site===S.site)){const s=S.site,pl=.5+.5*Math.sin(t*5);for(let j=-SR;j<=SR;j++)for(let i=-SR;i<=SR;i++){const x=s.x+i,y=s.y+j;if(x<0||y<0||x>=S.w.N||y>=S.w.N)continue;if(Math.max(Math.abs(i),Math.abs(j))===SR)quad(x,y,'rgba(255,210,122,.06)')}
   quad(s.x,s.y,`rgba(255,200,90,${.25+.25*pl})`,'#ffd27a');const c=sp(s.x+.5,s.y+.5);cx.strokeStyle=`rgba(255,220,130,${.6+.4*pl})`;cx.lineWidth=2.5;cx.beginPath();cx.ellipse(c[0],c[1],(14+6*pl)*cam.z,(14+6*pl)*cam.z*SQ,0,0,7);cx.stroke()}
+ drawV6(t,quad);
  if(S.dig)quad(S.dig.x,S.dig.y,'rgba(255,210,122,.25)','#ffd27a');
  for(const o of S.bots)if(o.st==='dig'&&o.task)quad(o.task.x,o.task.y,'rgba(255,210,122,.12)','rgba(255,210,122,.55)');
  // objects sorted by view depth
@@ -508,13 +526,13 @@ function frame(now){requestAnimationFrame(frame);const dtr=Math.min(.1,(now-(las
  for(const[,k,v]of L){if(k===0)drawBuilding(v,t);else if(k===1)drawBot(v,t);else if(k===3)drawTruck(v);else drawShip(v.x,v.y,gh(S.w,Math.floor(v.x),Math.floor(v.y)),0,false,.3+.7*S.sections/6)}
  if(S.landing&&S.lp){const e=1-S.landT,lift=e*e*T*30;drawShip(S.lp.x+2,S.lp.y+2,gh(S.w,S.lp.x,S.lp.y)+.3,lift,S.landT<1,1);if(S.landT<1&&S.landT>.6&&Math.random()<.6)fxDust(S.lp.x+2,S.lp.y+2,2)}
  for(const f of S.fx){const a=1-f.t/f.l;
-  if(f.k==='t'){if(f.t<0)continue;const p=sp(f.x,f.y,hS(f.x,f.y)+1.2+f.t*1.6);cx.font=`800 ${Math.max(10,7*cam.z)}px system-ui`;cx.textAlign='center';cx.globalAlpha=Math.max(0,1-f.t/f.l);cx.lineWidth=3;cx.strokeStyle='rgba(0,0,0,.7)';cx.strokeText(f.txt,p[0],p[1]);cx.fillStyle=f.col;cx.fillText(f.txt,p[0],p[1]);cx.globalAlpha=1;continue}
+  if(f.k==='t'){if(f.t<0)continue;const p=sp(f.x,f.y,hS(f.x,f.y)+1.2+f.t*1.6);cx.font=`800 ${Math.max(15,10*cam.z)}px system-ui`;cx.textAlign='center';cx.globalAlpha=Math.max(0,1-f.t/f.l);cx.lineWidth=4;cx.strokeStyle='rgba(0,0,0,.8)';cx.strokeText(f.txt,p[0],p[1]);cx.fillStyle=f.col;cx.fillText(f.txt,p[0],p[1]);cx.globalAlpha=1;continue}
   if(f.k==='r'){const hh=hS(f.x,f.y)+f.vh*f.t-4*f.t*f.t;const p=sp(f.x+f.vx*f.t,f.y+f.vy*f.t,Math.max(hS(f.x,f.y),hh));cx.fillStyle='#8a4422';cx.fillRect(p[0]-1*cam.z,p[1]-1*cam.z,2*cam.z,2*cam.z);continue}
   if(f.k==='v'){const p=sp(f.x+f.vx*f.t,f.y,f.h0+f.t*1.5);cx.fillStyle=`rgba(235,235,235,${a*.35})`;cx.beginPath();cx.arc(p[0],p[1],(2+f.t*4)*cam.z,0,7);cx.fill();continue}
   const p=sp(f.x+f.vx*f.t,f.y+f.vy*f.t*.3,hS(f.x,f.y)+f.t*.8);
   if(f.k==='s'){cx.fillStyle=`rgba(255,${200+Math.random()*55|0},120,${a})`;cx.fillRect(p[0]+(Math.random()-.5)*8*cam.z,p[1]-6*cam.z-f.t*20*cam.z,1.6*cam.z,1.6*cam.z);S.lights.push([p[0],p[1]-5*cam.z,6*cam.z,'255,210,120']);continue}
   cx.fillStyle=`rgba(200,130,80,${a*.45})`;cx.beginPath();cx.arc(p[0],p[1],(3+f.t*5)*cam.z,0,7);cx.fill()}
- cx.setTransform(DPR,0,0,DPR,0,0);
+ drawV6b(t);cx.setTransform(DPR,0,0,DPR,0,0);
  // day/night grading
  const dusk=ct<DAYLEN?Math.max(0,1-Math.min(ct,DAYLEN-ct)/70):0;
  if(dusk>0||nk>0){cx.globalCompositeOperation='multiply';const r=255-nk*190-dusk*10,g=255-nk*175-dusk*70,b=255-nk*120-dusk*110;cx.fillStyle=`rgb(${r|0},${g|0},${b|0})`;cx.fillRect(0,0,W,H);cx.globalCompositeOperation='source-over'}
@@ -525,7 +543,23 @@ function frame(now){requestAnimationFrame(frame);const dtr=Math.min(.1,(now-(las
  cx.fillStyle=`rgba(255,210,170,${.25-nk*.15})`;for(let i=0;i<28;i++){const x=((i*173.3+t*(12+i%5*4))%(W+40))-20,y=((i*97.1+Math.sin(t*.5+i)*20)%H);cx.fillRect(x,y,1.5,1.5)}
  if(S.storm>0){const a=Math.min(1,S.storm/5,(40-S.storm)/5);cx.fillStyle=`rgba(190,100,50,${a*.42})`;cx.fillRect(0,0,W,H);cx.strokeStyle=`rgba(240,170,120,${a*.45})`;cx.lineWidth=1.2;cx.beginPath();for(let i=0;i<90;i++){const x=((i*137+t*700)%(W+200))-100,y=(i*71.3+t*40)%H;cx.moveTo(x,y);cx.lineTo(x-50,y+8)}cx.stroke()}
  const vg=cx.createRadialGradient(W/2,H/2,Math.min(W,H)*.45,W/2,H/2,Math.max(W,H)*.75);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.35)');cx.fillStyle=vg;cx.fillRect(0,0,W,H);
+ if(S.flash>0){cx.fillStyle=`rgba(255,240,210,${S.flash*.7})`;cx.fillRect(0,0,W,H);S.flash=Math.max(0,S.flash-dtr*2.5)}cam.x-=shx;cam.y-=shy;musicTick();
  hud();if((miniN=(miniN+1)%30)===0)drawMini();}let miniN=0;
+function drawV6(t,quad){const Z=cam.z;
+ if(S.ice&&S.ice.size)for(const k of S.ice){const[x,y]=k.split(',').map(Number);if(tileHigh(x,y))quad(x,y,'rgba(225,245,255,.45)');else quad(x,y,'rgba(225,245,255,.18)')}
+ for(const c of S.craters){const p=sp(c.x+.5,c.y+.5);cx.fillStyle='rgba(40,14,6,.45)';cx.beginPath();cx.ellipse(p[0],p[1],10*Z,10*Z*SQ,0,0,7);cx.fill();cx.strokeStyle='rgba(230,150,100,.35)';cx.lineWidth=1.5;cx.stroke()}
+ if(S.site&&S.bots.some(o=>o.site===S.site)){const s=S.site,h=S.bh0,a=.55+.25*Math.sin(t*4);cx.save();cx.setLineDash([5*Z,4*Z]);cx.lineDashOffset=-t*20;
+  const x0=Math.max(0,s.x-SR),y0=Math.max(0,s.y-SR),x1=Math.min(S.w.N,s.x+SR+1),y1=Math.min(S.w.N,s.y+SR+1);const C=[[x0,y0],[x1,y0],[x1,y1],[x0,y1]].map(([i,j])=>sp(i,j,h));
+  cx.fillStyle=`rgba(120,220,255,${a*.16})`;poly(C);cx.fill();cx.strokeStyle=`rgba(140,230,255,${a})`;cx.lineWidth=2;cx.stroke();cx.setLineDash([]);
+  cx.strokeStyle=`rgba(140,230,255,${a*.5})`;cx.lineWidth=1;for(const[i,j]of[[x0,y0],[x1,y0],[x1,y1],[x0,y1]]){const g=sp(i,j,gh(S.w,i,j)),f=sp(i,j,h);cx.beginPath();cx.moveTo(g[0],g[1]);cx.lineTo(f[0],f[1]);cx.stroke()}
+  const m=sp(s.x+.5,y0,h);cx.font=`700 ${Math.max(11,8*Z)}px system-ui`;cx.textAlign='center';cx.fillStyle='rgba(160,235,255,.95)';cx.fillText('PAD LEVEL',m[0],m[1]-6*Z);cx.restore()}
+ for(const m of S.mets){if(m.hit)continue;const k=1-m.t/m.t0,p=sp(m.x+.5,m.y+.5),r=(6+18*(1-k))*Z;cx.fillStyle=`rgba(0,0,0,${.2+.4*k})`;cx.beginPath();cx.ellipse(p[0],p[1],r,r*SQ,0,0,7);cx.fill();
+  cx.strokeStyle=`rgba(255,80,60,${.5+.5*Math.sin(t*14)})`;cx.lineWidth=2;cx.beginPath();cx.ellipse(p[0],p[1],22*Z,22*Z*SQ,0,0,7);cx.stroke();
+  const hy=p[1]-(1-k)*H*.9;cx.strokeStyle='rgba(255,200,120,.8)';cx.lineWidth=3*Z;cx.beginPath();cx.moveTo(p[0]+(1-k)*W*.3,hy);cx.lineTo(p[0]+(1-k)*W*.3+30*Z,hy-50*Z);cx.stroke();cx.fillStyle='#fff3c0';cx.beginPath();cx.arc(p[0]+(1-k)*W*.3,hy,4*Z,0,7);cx.fill()}}
+function drawV6b(t){const Z=cam.z;
+ for(const m of S.mets)if(m.hit&&m.t>-1.5){const k=-m.t/1.5,p=sp(m.x+.5,m.y+.5);cx.fillStyle=`rgba(255,220,150,${(1-k)*.8})`;cx.beginPath();cx.arc(p[0],p[1],(10+60*k)*Z,0,7);cx.fill();S.lights.push([p[0],p[1],90*Z,'255,190,120'])}
+ for(const b of S.built)if(b.kind==='solar'&&b.dust>.12&&b.bt<=0){const p=sp(b.x+b.w/2,b.y,gh(S.w,b.x,b.y)+2.2);const w=22*Z;cx.fillStyle='rgba(0,0,0,.6)';cx.fillRect(p[0]-w/2-1,p[1]-1,w+2,5);cx.fillStyle=b.dust>.5?'#e0604a':'#d9a050';cx.fillRect(p[0]-w/2,p[1],w*b.dust/.9,3);cx.font=`700 ${Math.max(9,6*Z)}px system-ui`;cx.textAlign='center';cx.fillStyle='#f2c79a';cx.fillText('dust '+Math.round(b.dust*100)+'%',p[0],p[1]-3)}
+ for(const o of S.bots)if(o.st==='clean'&&o.wipe>0){const p=sp(o.x,o.y),s=Z*1.2,a=Math.sin(t*12+o.id)*.9;const hx=p[0]+4*s,hy=p[1]-14*s;cx.strokeStyle='#d8d4cc';cx.lineWidth=1.6*s;cx.beginPath();cx.moveTo(hx,hy);const ex=hx+Math.cos(a-1)*9*s,ey=hy-Math.sin(a+.4)*5*s-4*s;cx.lineTo(ex,ey);cx.stroke();cx.fillStyle='#4fa3d6';cx.fillRect(ex-3*s,ey-1.5*s,6*s,3*s)}}
 // ---------- UI ----------
 let toastT=0;function toast(s,d=3){const e=$('toast');e.textContent=s;e.style.opacity=1;clearTimeout(toastT);toastT=setTimeout(()=>e.style.opacity=0,d*1000);if(S)S.lastMsg=s}
 function mm(s){s=Math.max(0,Math.ceil(s));return String(s/60|0).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
@@ -535,7 +569,7 @@ let hudK='';function hud(){const ct=S.time%DAY,day=ct<DAYLEN;const P=packs();con
  if($('ovMats').style.display==='grid'&&(!window.__mt||performance.now()-window.__mt>400)){window.__mt=performance.now();openMats()}
  {const tot=Math.floor(S.mats.silica);if(window.__ms!=null&&tot>window.__ms){$('bMats')&&$('bMats').animate([{boxShadow:'0 0 0 2px #ffe08a'},{boxShadow:'none'}],400)}window.__ms=tot}
  if(S.sel){$('rob').style.display='flex';$('mbar').style.height=S.sel.m+'%';$('rname').textContent='Optimus '+S.sel.id+' · '+Math.round(S.sel.e)+'%';$('rDig').classList.toggle('on',tool==='dig'||S.sel.st==='dig');$('rStay').classList.toggle('on',S.sel.st==='stay');$('rCharge').classList.toggle('on',S.sel.st==='charge')}else $('rob').style.display='none';
- $('ctx').style.display=S.arm?'flex':'none';$('cGo').style.display=S.arm&&S.arm.k==='road'?'none':'';$('cX').textContent=S.arm&&S.arm.k==='road'?'Done':'Cancel';$('tAI').classList.toggle('on',S.ai);bpanel();$('tDig').classList.toggle('on',tool==='digall');$('tRaise').classList.toggle('on',tool==='raise');$('tLower').classList.toggle('on',tool==='lower')}
+ $('ctx').style.display=S.arm?'flex':'none';$('cGo').style.display=S.arm&&S.arm.k==='road'?'none':'';$('cX').textContent=S.arm&&S.arm.k==='road'?'Done':'Cancel';$('tAI').classList.toggle('on',S.ai);bpanel();$('tDig').classList.toggle('on',tool==='digall');$('tRaise').classList.toggle('on',tool==='raise');$('tLower').classList.toggle('on',tool==='lower');if(S.sel)$('rClean').classList.toggle('on',S.sel.st==='clean'||tool==='clean');objHud()}
 function uiRefresh(){}
 let bpK='';function bpanel(){const b=S.selB,e=$('bpan');if(!b||S.arm||(b.kind!=='factory'&&b.kind!=='biodome')){if(bpK){e.style.display='none';bpK=''}return}
  let k=b.kind+b.id+(b.bt>0)+!!b.make;if(b.gh)k+=Math.round(b.gh.grown*20)+'|'+Math.round(b.gh.crop*20)+b.gh.fruit+(b.gh.remain>0);if(k===bpK)return;bpK=k;e.style.display='flex';
@@ -560,7 +594,7 @@ function armBuild(k){if(k==='road'){S.arm={k,x:null,y:null};S.sel=null;tool=null
 function openMats(){$('mlist').innerHTML=MATS.map(m=>`<div class="mr"><span>${m[1]} <small style="color:#9a958c">${m[2]}</small></span><span>${S.mats[m[0]].toFixed(1)}</span></div>`).join('');$('ovMats').style.display='grid'}
 function closeOv(){for(const id of['ovBuild','ovMats','ovPause','ovPad'])$(id).style.display='none';if(S)S.paused=false}
 function showEnd(won){$('eK').textContent=won?'OCCUPYING MARS':'SILENCE';$('eT').textContent=won?'The world is yours':'Your Optimus units are gone';
- $('eM').textContent=won?'The Bio Dome is breathing and the first crew stands on the pad.':'Charge before night. Keep a Megapack fed.';$('eNext').style.display=won&&S.lv[0]<LEVELS.length?'':'none';$('ovEnd').style.display='grid'}
+ $('eM').textContent=won?'The Bio Dome is breathing and the first crew stands on the pad.':'Charge before night. Keep a Megapack fed.';$('eStars').innerHTML=won&&S.stars?'★'.repeat(S.stars)+'<span style="opacity:.3">'+'★'.repeat(3-S.stars)+'</span>':'';$('eStT').textContent=won&&S.stars?'Landed in '+mm(S.t)+' · par '+mm(S.lvx.par):'';$('eNext').style.display=won&&S.lv[0]<LEVELS.length?'':'none';$('ovEnd').style.display='grid'}
 $('bBuild').onclick=()=>{if($('ovBuild').style.display==='grid')closeOv();else{closeOv();openBuild()}};
 $('bMats').onclick=()=>{if($('ovMats').style.display==='grid')closeOv();else{closeOv();openMats()}};
 for(const id of['ovBuild','ovMats'])$(id).onclick=e=>{if(e.target.id===id)closeOv()};
@@ -630,8 +664,8 @@ function tap(sx,sy){if(!S||S.outcome!=='playing')return;const[x,y]=unproj(sx,sy)
   toast(siteHigh(site)?(team.length>1?'All '+team.length+' robots digging here.':'Optimus '+team[0].id+' digging here.'):'Already flat here. Robots standing by.');tool=null;sfx('sel');return}
  if(tool==='raise'||tool==='lower'){const v=nearestV(sx,sy);if(v&&shape(S.w,v[0],v[1],tool==='raise'?1:-1))sfx('shape');return}
  const now=performance.now();if(now-lastTap.t<320&&Math.hypot(sx-lastTap.x,sy-lastTap.y)<30){gather(x,y);lastTap.t=0;return}lastTap={t:now,x:sx,y:sy};
- const b=occ(tx,ty);if(b&&b!==S.ship){S.selB=S.selB===b?null:b;const K=KINDS[b.kind];toast(K.name+(b.bt>0?' under construction.':b.kind==='pack'?' · battery '+Math.round(b.bat)+'%':b.kind==='solar'&&b.dust>.1?' · dusty, tap again to clean':' online.'));
-  if(b.kind==='solar'&&b.dust>.1&&S.selB===null){b.dust=0;toast('Solar array clear.')}return}
+ const b=occ(tx,ty);if(b&&b!==S.ship){S.selB=S.selB===b?null:b;const K=KINDS[b.kind];toast(K.name+(b.bt>0?' under construction.':b.kind==='pack'?' · battery '+Math.round(b.bat)+'%':b.kind==='solar'&&b.dust>.1?' · dust '+Math.round(b.dust*100)+'%':' online.'));
+  if(b.kind==='solar'&&b.dust>.02&&b.bt<=0){const o=(tool==='clean'&&S.sel)?S.sel:nearestFree(b);tool=tool==='clean'?null:tool;if(o&&sendClean(o,b)){S.selB=null;toast('Optimus '+o.id+' heading to clean the solar array.');sfx('sel')}else if(!o){b.dust=0;toast('No robot free. You wiped the panel by hand.')}}return}
  if(b===S.ship){toast(S.sections+' Starship sections left for building.');return}
  if(S.sel){S.sel=null;tool=null}else toast('Double-tap the land to summon all Optimus.')}
 function paintRoad(sx,sy){const[x,y]=unproj(sx,sy);const tx=Math.floor(x),ty=Math.floor(y);S.arm.hx=tx;S.arm.hy=ty;if(S.roads.has(tx+','+ty))return;const e=canPlace('road',tx,ty);if(e){if(S.arm.lastE!==tx+','+ty){S.arm.lastE=tx+','+ty;toast(e==='Flatten before you build.'?'Roads need flat squares.':e)}return}placeBuild('road',tx,ty)}
@@ -649,8 +683,8 @@ let AC=null,master;function aud(){if(AC){if(AC.state==='suspended')AC.resume();r
  const lfo=AC.createOscillator(),lg=AC.createGain();lfo.frequency.value=.07;lg.gain.value=180;lfo.connect(lg).connect(f.frequency);lfo.start();
  for(const fr of[55,82.4]){const o=AC.createOscillator(),og=AC.createGain();o.type='sine';o.frequency.value=fr;og.gain.value=.05;o.connect(og).connect(master);o.start()}}catch(e){}}
 function tone(fr,d,type='sine',v=.15,slide=0){if(!AC||muted)return;const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.setValueAtTime(fr,t);if(slide)o.frequency.exponentialRampToValueAtTime(fr*slide,t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(master);o.start(t);o.stop(t+d+.02)}
-let sfxT={};function sfx(k){const n=performance.now();if(sfxT[k]&&n-sfxT[k]<70)return;sfxT[k]=n;
- if(k==='shape')tone(140,.12,'triangle',.12,.6);else if(k==='dig')tone(90,.15,'square',.05,.5);else if(k==='sel')tone(660,.08,'sine',.08);
+let sfxT={};function sfx(k){const n=performance.now();if(sfxT[k]&&n-sfxT[k]<(SFXT[k]||70))return;sfxT[k]=n;sfx2(k);
+ if(k==='dig'||!AC){}if(k==='shape')tone(140,.12,'triangle',.12,.6);else if(k==='dig')tone(90,.15,'square',.05,.5);else if(k==='sel')tone(660,.08,'sine',.08);
  else if(k==='place')tone(330,.2,'triangle',.1,1.5);else if(k==='done'){tone(523,.25,'sine',.12);setTimeout(()=>tone(784,.35,'sine',.12),120)}
  else if(k==='night')tone(196,1.2,'sine',.1,.7);else if(k==='storm')tone(70,1.5,'sawtooth',.05,.6);else if(k==='inbound')tone(110,2.5,'sawtooth',.06,2);
  else if(k==='win'){[392,523,659,784].forEach((f,i)=>setTimeout(()=>tone(f,.6,'sine',.12),i*160))}}
@@ -662,9 +696,9 @@ function mkPlanet(){const s=256,c=document.createElement('canvas');c.width=c.hei
   const l=Math.max(.15,(-u*.5-v*.4+zz*.8));im.data[i]=Math.min(255,R*l);im.data[i+1]=Math.min(255,G*l);im.data[i+2]=Math.min(255,B*l);im.data[i+3]=255}g.putImageData(im,0,0);return c}
 function drawTitle(t){cx.setTransform(DPR,0,0,DPR,0,0);cx.fillStyle='#07080c';cx.fillRect(0,0,W,H);for(const s of stars){cx.globalAlpha=s.a*(.55+.45*Math.sin(t*s.tw+s.x*12));cx.fillStyle='#e8e4dc';cx.beginPath();cx.arc(((s.x+t*.004)%1)*W,s.y*H,s.r,0,7);cx.fill()}cx.globalAlpha=1;
  if(!planet)planet=mkPlanet();const r=Math.min(W,H)*.34;cx.save();cx.translate(W*.5,H*.36);cx.rotate(t*.02);cx.drawImage(planet,-r,-r,r*2,r*2);cx.restore()}
-function showTitle(){$('title').style.display='flex';$('top').style.display='none';for(const id of['tools','joy','spd','mini','tSec'])$(id).style.visibility='hidden';
- let done=0;try{done=+localStorage.getItem('om.done')||0}catch(e){}const L=$('tLv');L.innerHTML='';for(const l of LEVELS){const b=document.createElement('button');b.className='b';b.textContent=l[0];b.title=l[1];if(l[0]>done+1){b.style.opacity=.35}b.onclick=()=>go(l[0]);L.appendChild(b)}}
-function go(id){aud();$('title').style.display='none';$('top').style.display='flex';for(const i of['tools','joy','spd','mini','tSec'])$(i).style.visibility='';startLevel(id)}
+function showTitle(){$('tut').style.display='none';$('title').style.display='flex';$('top').style.display='none';for(const id of['tools','joy','spd','mini','tSec','obj','roster'])$(id).style.visibility='hidden';
+ let done=0;try{done=+localStorage.getItem('om.done')||0}catch(e){}const L=$('tLv');L.innerHTML='';for(const l of LEVELS){const b=document.createElement('button');b.className='b';const st=starsGet(l[0]);b.innerHTML=l[0]+(st?`<small class=st>${'★'.repeat(st)}${'☆'.repeat(3-st)}</small>`:'');b.title=l[1];if(l[0]>done+1){b.style.opacity=.35}b.onclick=()=>go(l[0]);L.appendChild(b)}}
+function go(id){aud();$('title').style.display='none';$('top').style.display='flex';for(const i of['tools','joy','spd','mini','tSec','obj','roster'])$(i).style.visibility='';startLevel(id)}
 $('tPlay').onclick=()=>{let d=0;try{d=+localStorage.getItem('om.done')||0}catch(e){}go(Math.min(LEVELS.length,d+1))};
 function resize(){DPR=Math.min(1.5,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR}addEventListener('resize',resize);resize();
 window.__cam=cam;window.__sp=(x,y)=>sp(x,y,hAt(S.w,Math.max(0,Math.min(S.w.N-.01,x)),Math.max(0,Math.min(S.w.N-.01,y))));
@@ -673,4 +707,75 @@ window.__om={get S(){return S},go,step:(sec)=>{for(let i=0;i<sec*15;i++)step(1/1
  factoryMake,greenhouse,savePad,loadPad,startDig,digTarget,tileHigh,siteHigh,cheatBuild,fps:()=>fpsA.length/fpsA.reduce((a,b)=>a+b,0),flatten(x,y,w,h,v){for(let j=0;j<=h;j++)for(let i=0;i<=w;i++)setH(S.w,x+i,y+j,v);S.w.rev++}};
 const q=new URLSearchParams(location.search);if(q.get('level')){go(Math.max(1,Math.min(LEVELS.length,+q.get('level')||1)))}else showTitle();
 requestAnimationFrame(frame);
+// ---------- v6: levels, hazards, cleaning, objectives, roster, tutorial, music ----------
+function lvx(id){const L=LEVELS.find(l=>l[0]===id)||LEVELS[0],lay=L[4];
+ return{met:id<3?0:id<9?1:id<17?2:3,ice:lay==='lake'||lay==='basin'||id%4===0,canyon:lay==='canyon'||(id>2&&id%5===1),limit:id>=5&&id%3===2?1500+id*20:0,par:480+id*25}}
+function lvSetup(){const X=S.lvx=lvx(S.lv[0]),N=S.w.N,r=rng(S.lv[3]*13);S.mets=[];S.craters=[];S.metT=90;S.shake=0;S.flash=0;S.ice=new Set();S.limit=X.limit;
+ const c=baseC(),far=(x,y)=>Math.hypot(x-c.x,y-c.y)>11;
+ if(X.canyon){const vert=r()<.5;let p=Math.floor(N*(r()<.5?.18:.82));for(let k=0;k<=N;k++){p=Math.max(3,Math.min(N-3,p+Math.round(r()*2-1)));for(let d=-1;d<=1;d++){const x=vert?p+d:k,y=vert?k:p+d;if(far(x,y))setH(S.w,x,y,0)}}fixAll(S.w);S.w.rev++}
+ if(X.ice){for(let b=0;b<3;b++){let x,y,t=0;do{x=3+Math.floor(r()*(N-6));y=3+Math.floor(r()*(N-6))}while(!far(x,y)&&t++<40);const R=2+r()*1.5;for(let j=-3;j<=3;j++)for(let i=-3;i<=3;i++)if(Math.hypot(i,j)<R&&x+i>=0&&y+j>=0&&x+i<N&&y+j<N)S.ice.add((x+i)+','+(y+j))}}
+ if(S.lv[0]===1)setTimeout(()=>S&&S.lv[0]===1&&tutShow(false),900)}
+function hazStep(dt){const X=S.lvx;if(!X)return;
+ if(X.met&&S.t>60&&!S.landing){S.metT-=dt;if(S.metT<=0){S.metT=(X.met===1?160:X.met===2?110:75)*(.7+Math.random()*.6);meteorWarn()}}
+ for(const m of S.mets){m.t-=dt;if(m.t<=0&&!m.hit){m.hit=1;meteorHit(m)}}S.mets=S.mets.filter(m=>m.t>-1.5);
+ if(S.limit&&S.outcome==='playing'&&S.t>S.limit){S.outcome='lost';toast("Time's up. The crew turned back to Earth.");setTimeout(()=>showEnd(false),1200)}}
+function meteorWarn(x,y){const N=S.w.N;if(x==null){for(let k=0;k<40;k++){x=2+Math.floor(Math.random()*(N-4));y=2+Math.floor(Math.random()*(N-4));let near=false;for(const b of S.built)if(x>=b.x-2&&x<b.x+b.w+2&&y>=b.y-2&&y<b.y+b.h+2)near=true;if(!near||Math.random()<.08)break}}
+ S.mets.push({x,y,t:3.5,t0:3.5});toast('Meteor incoming. Watch the shadow.');sfx('warn');return S.mets[S.mets.length-1]}
+function meteorHit(m){const{x,y}=m;S.shake=1;S.flash=1;sfx('boom');fxDust(x+.5,y+.5,26);fxDebris(x,y);fxDebris(x+1,y+1);fxDebris(x,y+1);
+ let lock=false;for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++)if(vLocked(x+i,y+j))lock=true;
+ if(!lock&&gh(S.w,x,y)>0){shape(S.w,x,y,-1);m.dent=1}S.craters.push({x,y});if(S.craters.length>30)S.craters.shift();
+ const b=S.built.find(b=>x+.5>=b.x-.5&&x+.5<=b.x+b.w+.5&&y+.5>=b.y-.5&&y+.5<=b.y+b.h+.5);
+ if(b){if(b.kind==='solar'){b.dust=Math.min(.9,(b.dust||0)+.4);toast('Meteor dusted a solar array.')}else if(b.kind==='pack'){b.bat=Math.max(0,b.bat-12);toast('Meteor jolted a Megapack. Battery -12%.')}else{b.scorch=1;toast(KINDS[b.kind].name+' scorched but standing.')}}else toast('Meteor impact. Small crater.');
+ for(const o of S.bots)if(o.st!=='down'&&Math.hypot(o.x-x-.5,o.y-y-.5)<2){o.e=Math.max(6,o.e-25);fxText(o.x,o.y,'-25% energy','#ff8a7a')}}
+function dustyPanel(th){let best=null;for(const b of S.built)if(b.kind==='solar'&&b.bt<=0&&b.dust>th&&!S.bots.some(q=>q.st==='clean'&&q.task===b)){if(!best||b.dust>best.dust)best=b}return best}
+function sendClean(o,b){if(!o||o.st==='down'||!b)return false;o.site=null;o.st='clean';o.task=b;o.tx=b.x+b.w/2;o.ty=b.y+b.h+.3;o.home={x:o.tx,y:o.ty};o.wipe=0;return true}
+function nearestFree(b){let best=null,bd=1e9;for(const o of S.bots){if(o.st==='down'||o.st==='charge'||o.st==='clean'||o.e<15)continue;const d=Math.hypot(o.x-b.x,o.y-b.y)+(o.st==='dig'||o.st==='build'?8:0);if(d<bd){bd=d;best=o}}return best}
+function cleanStep(o,dt){const b=o.task;if(!b||!S.built.includes(b)){o.st='idle';o.task=null;return}
+ o.tx=b.x+b.w/2+Math.sin(S.t*.7+o.id)*b.w*.3;o.ty=b.y+b.h+.25;moveTo(o,dt,1.4);
+ if(Math.hypot(b.x+b.w/2-o.x,b.y+b.h+.25-o.y)<b.w*.6){o.wipe=(o.wipe||0)+dt;if(S.storm<=0)b.dust=Math.max(0,b.dust-dt*.07);o.e-=dt*.04;if(Math.random()<dt*5)fxDust(o.x+(Math.random()-.5)*.6,o.y-.6,1);sfx('brush');
+  if(b.dust<=.01){b.dust=0;o.st='idle';o.task=null;o.wipe=0;fxText(b.x+1,b.y+1.5,'Panel clean','#9fe6ff');toast('Optimus '+o.id+' cleaned the solar array.')}}}
+function autoClean(o){if(S.storm>0||o.e<30||o.m<20)return false;if(o.nc&&S.t<o.nc)return false;o.nc=S.t+2;const b=dustyPanel(.3);return b?sendClean(o,b):false}
+function starsCalc(){const p=S.lvx?S.lvx.par:600;return S.t<=p?3:S.t<=p*1.8?2:1}
+function starsGet(id){try{return+localStorage.getItem('om.stars.'+id)||0}catch(e){return 0}}
+function starsWin(){const s=starsCalc();S.stars=s;try{if(s>starsGet(S.lv[0]))localStorage.setItem('om.stars.'+S.lv[0],s)}catch(e){}}
+const NEXTG=['refinery','icewell','factory','launchpad','biodome'];
+function nextGoal(){if(count('pack',false)<2)return'pack';for(const k of NEXTG)if(!count(k,false))return k;return null}
+let objK='',objT=0;function objHud(){const n=performance.now();if(n-objT<350)return;objT=n;const e=$('objL');let h='';
+ const ub=S.built.find(b=>b.bt>0);const g=nextGoal();
+ if(S.landing)h='<b>Starship inbound.</b> Hold on.';
+ else if(ub)h=`<b>Building ${KINDS[ub.kind].name}</b> ${Math.round((1-ub.bt/ub.bt0)*100)}%`;
+ else if(g){const K=KINDS[g],pr=prereq(g),la=lacks(K.cost);h=`<b>Next: ${K.name}${g==='pack'?' ('+count('pack',false)+'/2)':''}</b>`;
+  if(pr&&!(g==='factory'&&pr==='Needs two Megapacks'))h+=`<div>${pr}</div>`;else if(la.length)h+=la.map(m=>`<div>${m[1].split(' ')[0]} ${Math.floor(S.mats[m[0]])}/${K.cost[m[0]]}</div>`).join('')+'<div class=d>Dig hills to collect</div>';else h+='<div class=ok>Ready. Open Build</div>'}
+ const dp=S.built.filter(b=>b.kind==='solar'&&b.dust>.3).length;if(dp)h+=`<div class=w>${dp} solar dusty. Clean them</div>`;
+ if(S.limit)h+=`<div class=w>Time left ${mm(S.limit-S.t)}</div>`;
+ if(h!==objK){objK=h;e.innerHTML=h}
+ rosterHud()}
+const JI={dig:'<path d="M3 13L10 6M9 3l4 4-2 2-4-4z"/>',charge:'<path d="M9 2L4 9h4l-1 5 5-7H8z" fill="currentColor"/>',build:'<path d="M3 13l6-6M7 3h6v3H7z"/>',clean:'<path d="M2 10q3-4 6 0t6 0M4 13h8"/>',idle:'<circle cx="8" cy="8" r="2" fill="currentColor"/>',down:'<path d="M4 4l8 8M12 4l-8 8"/>'};
+function job(o){return o.st==='dig'||o.st==='charge'||o.st==='build'||o.st==='clean'||o.st==='down'?o.st:'idle'}
+let rosK='';function rosterHud(){const e=$('roster');const k=S.bots.map(o=>o.id+job(o)+(o.e/10|0)+(o===S.sel)).join();if(k===rosK)return;
+ if(rosK.split(',').length!==S.bots.length||!e.children.length||e.children.length!==S.bots.length){e.innerHTML=S.bots.map(o=>`<button class="rc" data-id="${o.id}"><span class=n>${o.id}</span><svg viewBox="0 0 16 16"></svg><i><b></b></i></button>`).join('');
+  for(const c of e.children)c.onclick=()=>{const o=S.bots.find(q=>q.id===+c.dataset.id);if(!o)return;S.sel=o;S.selB=null;tool=null;const[u,v]=rv(o.x,o.y);cam.x=u*T;cam.y=v*T*SQ-hS(o.x,o.y)*T*HZ;clampCam();toast('Optimus '+o.id+' · '+job(o)+' · '+Math.round(o.e)+'%');sfx('sel')}}
+ rosK=k;[...e.children].forEach((c,i)=>{const o=S.bots[i];const j=job(o);c.className='rc j-'+j+(o===S.sel?' on':'');c.dataset.job=j;c.querySelector('svg').innerHTML=JI[j];const b=c.querySelector('b');b.style.width=Math.round(o.e)+'%';b.style.background=o.e<25?'#e0604a':'#4fd18a'})}
+const TUT=[['Dig','Tap Dig, then tap a hill. All robots level it to pad height and bring back materials.'],['Build','Open Build. The objectives panel (bottom left) shows what to make next and what is missing.'],['Charge','Robots walk to their numbered Megapack port when low. Tap a robot, then Charge to send it early.'],['Clean','Dust and storms choke the solar. Tap a dusty panel and the nearest robot wipes it clean.'],['Rotate','Push the bottom-right joystick left or right to rotate the view. Up and down zooms.']];
+let tutI=0;function tutShow(force){let seen=0;try{seen=+localStorage.getItem('om.tut')}catch(e){}if(seen&&!force)return;tutI=0;tutDraw();$('tut').style.display='block'}
+function tutDraw(){$('tutH').textContent=(tutI+1)+'/'+TUT.length+' · '+TUT[tutI][0];$('tutP').textContent=TUT[tutI][1];$('tutN').textContent=tutI<TUT.length-1?'Next':'Got it'}
+function tutEnd(){$('tut').style.display='none';try{localStorage.setItem('om.tut',1)}catch(e){}}
+$('tutN').onclick=()=>{if(tutI<TUT.length-1){tutI++;tutDraw()}else tutEnd()};$('tutS').onclick=tutEnd;
+$('pTut').onclick=()=>{closeOv();tutShow(true)};
+$('objH').onclick=()=>{$('obj').classList.toggle('min')};
+$('rClean').onclick=()=>{if(!S.sel)return;const b=dustyPanel(.02);if(b&&sendClean(S.sel,b)){toast('Optimus '+S.sel.id+' cleaning the solar array.');sfx('sel')}else{tool='clean';toast('Tap a dusty solar panel for Optimus '+S.sel.id+'.')}};
+// music: soft arpeggio, minor and slower at night
+let musT=0,musI=0;function musicTick(){if(!AC||muted||!S)return;const now=AC.currentTime;if(musT<now)musT=now+.05;
+ while(musT<now+.4){const night=(S.nightK||0)>.5;const sc=night?[110,130.8,146.8,164.8,196]:[130.8,164.8,196,220,261.6];const pat=night?[0,2,1,3,0,4,2,1]:[0,2,4,3,1,3,2,4];
+  const f=sc[pat[musI%8]]*(musI%16<8?1:night?.75:1.125);const o=AC.createOscillator(),g=AC.createGain();o.type=night?'sine':'triangle';o.frequency.value=f;g.gain.setValueAtTime(0,musT);g.gain.linearRampToValueAtTime(night?.05:.04,musT+.04);g.gain.exponentialRampToValueAtTime(.001,musT+(night?1.4:.7));o.connect(g).connect(master);o.start(musT);o.stop(musT+1.5);
+  if(musI%8===0){const b=AC.createOscillator(),bg=AC.createGain();b.frequency.value=sc[0]/2;bg.gain.setValueAtTime(.05,musT);bg.gain.exponentialRampToValueAtTime(.001,musT+2.4);b.connect(bg).connect(master);b.start(musT);b.stop(musT+2.5)}
+  musT+=night?.75:.42;musI++}window.__mus=musI}
+function noise(d,fr,v,type='lowpass',sweep){if(!AC||muted)return;const t=AC.currentTime,len=Math.ceil(AC.sampleRate*d),bf=AC.createBuffer(1,len,AC.sampleRate),c=bf.getChannelData(0);for(let i=0;i<len;i++)c[i]=Math.random()*2-1;
+ const s=AC.createBufferSource();s.buffer=bf;const f=AC.createBiquadFilter();f.type=type;f.frequency.setValueAtTime(fr,t);if(sweep)f.frequency.exponentialRampToValueAtTime(fr*sweep,t+d);const g=AC.createGain();g.gain.setValueAtTime(.001,t);g.gain.linearRampToValueAtTime(v,t+Math.min(.05,d*.2));g.gain.exponentialRampToValueAtTime(.001,t+d);s.connect(f).connect(g).connect(master);s.start(t)}
+let sfxLog={};function sfx2(k){sfxLog[k]=(sfxLog[k]||0)+1;
+ if(k==='step')tone(70+Math.random()*25,.05,'triangle',.035,.6);else if(k==='brush')noise(.12,2400,.03,'bandpass');else if(k==='build'){tone(900+Math.random()*200,.04,'square',.025);}
+ else if(k==='roar'){noise(14,180,.35,'lowpass',3);tone(45,14,'sawtooth',.06,1.6)}else if(k==='warn')tone(880,.5,'square',.04,.5);else if(k==='boom'){noise(1.4,600,.5,'lowpass',.15);tone(55,1,'sine',.25,.4)}
+ else if(k==='dig')noise(.18,500,.08,'lowpass')}
+const SFXT={step:200,brush:260,build:220};
+window.__om6={lvx,meteorWarn,meteorHit,dustyPanel,sendClean,nearestFree,stars:starsCalc,starsGet,nextGoal,tutShow,get sfxLog(){return sfxLog},get AC(){return AC}};
 </script></body></html>
