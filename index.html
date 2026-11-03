@@ -16,8 +16,8 @@ canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
 #joy{position:fixed;right:max(4px,env(safe-area-inset-right));bottom:calc(4px + env(safe-area-inset-bottom));width:84px;height:84px;border-radius:50%;background:radial-gradient(#22252c,#111318);border:1px solid #2b2f38;z-index:5;touch-action:none}
 #knob{position:absolute;left:28px;top:28px;width:28px;height:28px;border-radius:50%;background:#e8e4dc;box-shadow:0 2px 6px #000;color:#555;font:700 16px/28px system-ui;text-align:center}
 #spd{position:fixed;right:14px;bottom:calc(104px + env(safe-area-inset-bottom));z-index:5;font-size:11px;min-height:34px;padding:0 10px;background:transparent;border-color:transparent}
-#tools{position:fixed;left:8px;bottom:calc(10px + env(safe-area-inset-bottom));display:flex;gap:6px;z-index:5}
-#tSec{position:fixed;left:8px;bottom:calc(58px + env(safe-area-inset-bottom));z-index:5;min-height:34px;width:34px;padding:0;font-size:15px;opacity:.85}
+#tools{display:flex;gap:6px}
+#tSec{min-height:40px;width:40px;padding:0;font-size:15px;opacity:.85}
 #ovSec .b.on{background:#c45c3a;border-color:#c45c3a}
 #tools .b{min-height:40px;font-size:11px;padding:0 10px}
 #rob{position:fixed;right:4px;bottom:calc(146px + env(safe-area-inset-bottom));display:none;gap:4px;z-index:5;align-items:stretch}
@@ -45,10 +45,10 @@ canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
 .card{box-shadow:0 20px 60px rgba(0,0,0,.6)}
 #mini{position:fixed;inset:auto;top:calc(46px + env(safe-area-inset-top));right:52px;width:100px;height:80px;border:1px solid #2b2f38;border-radius:6px;z-index:5;display:none;position:fixed}
 @media (min-width:900px) and (min-height:600px){#mini{display:block}}
-#obj{position:fixed;left:8px;bottom:calc(150px + env(safe-area-inset-bottom));z-index:5;width:172px;background:rgba(16,18,24,.84);border:1px solid #2b2f38;border-radius:8px;font-size:11px;line-height:1.4;padding:6px 8px;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+#obj{width:172px;background:rgba(16,18,24,.84);border:1px solid #2b2f38;border-radius:8px;font-size:11px;line-height:1.4;padding:6px 8px;box-shadow:0 2px 10px rgba(0,0,0,.35)}
 #objH{display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:.16em;color:#9a958c;cursor:pointer;min-height:20px}#objH:after{content:'–';font-size:14px}#obj.min #objH:after{content:'+'}#obj.min #objL{display:none}
 #objL b{color:#ffe08a;font-weight:600}#objL .ok{color:#6ff0a8}#objL .w{color:#f0a070}#objL .d{color:#9a958c}
-#roster{position:fixed;left:8px;bottom:calc(112px + env(safe-area-inset-bottom));z-index:5;display:flex;gap:3px;max-width:calc(100vw - 122px);overflow-x:auto;scrollbar-width:none}
+#roster{display:flex;gap:3px;max-width:calc(100vw - 122px);overflow-x:auto;scrollbar-width:none}
 .rc{flex:none;width:30px;height:32px;padding:2px 0 0;border-radius:6px;background:rgba(16,18,24,.84);border:1px solid #2b2f38;color:#e8e4dc;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;font:600 9px system-ui;position:relative}
 .rc svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.6}.rc i{position:absolute;left:3px;right:3px;bottom:2px;height:3px;background:#222;border-radius:2px;overflow:hidden}.rc i b{display:block;height:100%}
 .rc.on{border-color:#6ff0a8}.rc.j-dig{color:#ffd27a}.rc.j-charge{color:#7fd0ff}.rc.j-build{color:#ffb070}.rc.j-clean{color:#9fe6ff}.rc.j-down{color:#e0604a}.rc .n{line-height:10px}
@@ -57,14 +57,16 @@ canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
 .lvl .b small.st{display:block;font-size:8px;color:#ffd27a;letter-spacing:0}.lvl .b{flex-direction:column}
 #eStars{font-size:34px;color:#ffd27a;letter-spacing:.1em}
 @media (max-width:400px){#bat{width:30px}#clock{gap:5px;padding:0 7px}#top{gap:5px}#top .b{padding:0 9px}#cnt{padding:0 2px}}
-@media (max-height:500px){#obj{bottom:calc(150px + env(safe-area-inset-bottom));width:190px}}
+
+#lstack{position:fixed;left:max(6px,env(safe-area-inset-left));bottom:calc(6px + env(safe-area-inset-bottom));z-index:5;display:flex;flex-direction:column;gap:6px;align-items:flex-start;max-width:calc(100vw - 110px)}#lrow{display:flex;gap:6px}
 </style></head><body>
 <canvas id="c"></canvas>
 <div id="top"><button class="b" id="bBuild">Build</button><button class="b" id="bMats">Materials</button><span id="cnt">6</span>
 <div id="clock"><span id="sun">☀</span><span id="tm">15:00</span><span id="bat"><i></i></span><span id="bp">100%</span></div><button class="b" id="pause">II</button></div>
 <canvas id="mini"></canvas>
 <div id="toast"></div>
-<div id="tools"><button class="b" id="tRaise">Raise</button><button class="b" id="tLower">Lower</button><button class="b" id="tDig">Dig</button><button class="b" id="tRot" title="Rotate view">⟳</button><button class="b" id="tAI">AI</button></div>
+<div id="lstack"><div id="roster"></div><div id="lrow"><button class="b" id="tSec" title="Secret menu" aria-label="Secret menu">✦</button><div id="tools"><button class="b" id="tRot" title="Rotate view">⟳</button><button class="b" id="tAI">AI</button></div></div><div id="obj"><div id="objH">OBJECTIVE</div><div id="objL"></div></div></div>
+
 <div id="bpan" class="p2"></div>
 <div id="rob"><div class="m"><i id="mbar"></i></div><div class="p"><div class="t" id="rname">1</div><button class="b" id="rDig">Dig</button><button class="b" id="rCharge">Charge</button><button class="b" id="rClean">Clean</button><button class="b" id="rStay">Stay</button></div></div>
 <div id="ctx"><button class="b" id="cRot">Rotate</button><button class="b big" id="cGo">Build</button><button class="b" id="cX">Cancel</button></div>
@@ -72,8 +74,8 @@ canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
 <div id="joy"><div id="knob">⟳</div></div>
 <div class="ov" id="ovBuild"><div class="card"><h3>BUILD</h3><div id="blist"></div></div></div>
 <div class="ov" id="ovMats"><div class="card"><h3>MATERIALS</h3><div id="mlist"></div><p style="font-size:11px;color:#9a958c;line-height:1.5">Digging hills yields regolith oxides. Ice wells pull water ice and dry ice. A Tesla factory needs those plus extra iron and lime.</p></div></div>
-<div id="obj"><div id="objH">OBJECTIVE</div><div id="objL"></div></div><div id="roster"></div><div id="tut"><div id="tutH"></div><div id="tutP"></div><div class="row"><button class="b" id="tutS">Skip</button><button class="b big" id="tutN">Next</button></div></div>
-<button class="b" id="tSec" title="Secret menu" aria-label="Secret menu">✦</button>
+<div id="tut"><div id="tutH"></div><div id="tutP"></div><div class="row"><button class="b" id="tutS">Skip</button><button class="b big" id="tutN">Next</button></div></div>
+
 <div class="ov" id="ovSec"><div class="card" style="text-align:center;max-width:300px;width:100%"><h3 style="letter-spacing:.18em;font-size:12px;opacity:.7">MENU</h3><div style="display:flex;flex-direction:column;gap:8px"><button class="b" id="sGrid">Grid</button><button class="b" id="sAI">Colony AI</button><small style="letter-spacing:.16em;opacity:.6;margin-top:4px">FAST FORWARD</small><div id="sSpd" style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px"></div><small style="letter-spacing:.16em;opacity:.6;margin-top:4px">INSTANT BUILD</small><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px"><button class="b" data-k="refinery">Refinery</button><button class="b" data-k="icewell">Ice well</button><button class="b" data-k="factory">Tesla factory</button><button class="b" data-k="launchpad">Launch pad</button><button class="b" data-k="biodome" style="grid-column:span 2">Bio Dome</button></div><button class="b" id="sClose" style="margin-top:6px">Close</button></div></div></div>
 <div class="ov" id="ovPause"><div class="card" style="text-align:center"><h3>PAUSED</h3><div style="display:flex;flex-direction:column;gap:8px"><button class="b" id="pRes">Resume</button><button class="b" id="pMute">Mute</button><button class="b" id="pTut">Tutorial tips</button><button class="b" id="pAI">Colony AI: off</button><button class="b" id="pSave">Save pad</button><button class="b" id="pLoad">Load pad</button><button class="b" id="pRestart">Restart level</button><button class="b" id="pMenu">Campaign</button></div></div></div>
 <div class="ov" id="ovPad"><div class="card"><h3 id="padH">PAD BAYS</h3><div id="padL"></div><div style="text-align:center;margin-top:10px"><button class="b" id="padBack">Back</button></div></div></div>
@@ -208,7 +210,7 @@ function startLevel(id){
  for(let i=0;i<6;i++)S.bots.push({id:i+1,x:bx-1.5+i*.6,y:by+(i<3?2:9.6),tx:null,ty:null,e:100,m:100,st:'idle',task:null,face:0,wt:Math.random()*3,carry:0});
  cam.x=(bx+3)*T;cam.y=(by+5)*T*SQ-bh*T*HZ;cam.z=Math.max(.7,Math.min(1.6,Math.min(W,H)/(14*T)));if(W<=H*1.2){const top=(by+5.5)*T*SQ-bh*T*HZ-T*17;const lim=H*.12;if((top-cam.y)*cam.z+H/2<lim)cam.y=top+(H/2-lim)/cam.z;const bot=(by+6)*T*SQ;if((bot-cam.y)*cam.z+H/2>H-140){cam.z=Math.max(.5,(H*.88-140)/(bot-top));cam.y=top+(H/2-lim)/cam.z}}if(W>H*1.2){const top=Math.min(-MAXH*T*HZ,(by+5.5)*T*SQ-bh*T*HZ-T*16),bot=N*T*SQ+T;cam.z=Math.max(.45,Math.min(W*.82/(N*T),(H-70)/(bot-top)));cam.x=N*T/2;cam.y=(top+bot)/2+10/cam.z}
  S.bh0=bh;lvSetup();tcRev=-1;ROT=0;tool=null;S.arm=null;uiRefresh();toast('Six Optimus units and a Starship on the pad. Shape the red land.',5);
- setTimeout(()=>S&&S.outcome==='playing'&&toast('Tap Raise or Lower, or hold the land. Tap an Optimus to give it work.',5),6000);}
+ setTimeout(()=>S&&S.outcome==='playing'&&toast('Tap an Optimus, then tap the land to send it there, or tap Dig and a raised hill.',5),6000);}
 function occ(x,y,ignore){for(const b of S.built){if(b===ignore)continue;if(x>=b.x&&x<b.x+b.w&&y>=b.y&&y<b.y+b.h)return b}
  if(Math.abs(x+.5-S.ship.x)<2&&Math.abs(y+.5-S.ship.y)<2)return S.ship;return null}
 function count(k,done=true){return S.built.filter(b=>b.kind===k&&(!done||b.bt<=0)).length}
@@ -303,6 +305,7 @@ function botStep(o,dt,P){
   o.plug=false;if(moveTo(o,dt)&&!b.queue){o.plug=true;const p=b.p;if(p.bat>0){const a=Math.min(dt*4,100-o.e);o.e+=a;p.bat=Math.max(0,p.bat-a*.06)}o.m=Math.min(100,o.m+dt*2);
    if(o.e>=99.5&&o.m>=99){o.e=100;o.plug=false;o.port=null;if(o.resume==='dig'){o.resume=null;o.st='idle';if(startDig(o))toast('Optimus '+o.id+' charged. Back to digging.')}else{o.st='idle';toast('Optimus '+o.id+' fully charged.')}}}return}
  if(o.st==='clean'){cleanStep(o,dt);return}
+ if(o.st==='move'){if(moveTo(o,dt)){o.st='stay';o.tx=o.x;o.ty=o.y}return}
  if(o.st==='stay'||o.st==='gather'){if(o.tx!=null)moveTo(o,dt);return}
  if(o.st==='build'){const b=o.task;if(!b||b.bt<=0){o.st='idle';o.task=null;return}
   if(moveTo(o,dt)){b.bt-=dt*.55;o.work=(o.work||0)+dt;if(Math.random()<dt*6){fxSpark(o.x,o.y);sfx('build')}
@@ -314,7 +317,7 @@ function botStep(o,dt,P){
   const hv=tileHigh(t.x,t.y);if(!hv){const n=digTarget(o,t.x+.5,t.y+.5);if(n){o.task=n;o.home={x:n.x+.5,y:n.y+.5};return}if(o.site){o.task=null;o.wt2=0;return}o.st='idle';o.task=null;toast('Optimus '+o.id+' finished. Ground is flat at pad level.');return}
   o.dt2=(o.dt2||0)+dt;o.m=Math.max(0,o.m-dt*.25);o.work=(o.work||0)+dt;o.e-=dt*.05;
   if(Math.random()<dt*6)fxDebris(o.x,o.y);
-  if(o.dt2>1.4){o.dt2=0;if(shape(S.w,hv[0],hv[1],-1)){sfx('dig');fxDust(hv[0],hv[1],6);o.e-=2.2;
+  if(o.dt2>1.4){o.dt2=0;if(gh(S.w,hv[0],hv[1])>S.bh0&&shape(S.w,hv[0],hv[1],-1)){sfx('dig');fxDust(hv[0],hv[1],6);o.e-=2.2;
     const ref=(count('refinery')?1.5:1)*(S.starlink?1.2:1)*(1+.12*S.trucks.length);let k=0;
     for(const m of MATS)if(m[3]){const v=m[3]*.6*ref;S.mats[m[0]]+=v;if(k<2)S.fx.push({k:'t',x:o.x,y:o.y,txt:'+'+v.toFixed(1)+' '+m[1].split(' ')[0],col:k?'#ffb070':'#ffe08a',t:-k*.3,l:2.2});k++}
     if(S.ice&&S.ice.has(t.x+','+t.y)){const wv=3*ref;S.mats.water+=wv;S.mats.carbon+=wv*.4;S.fx.push({k:'t',x:o.x,y:o.y,txt:'+'+wv.toFixed(1)+' Ice',col:'#bfefff',t:-.5,l:2.2})}S.dug=(S.dug||0)+1}else{o.task=null}}
@@ -515,7 +518,7 @@ function frame(now){requestAnimationFrame(frame);const dtr=Math.min(.1,(now-(las
  if(S.arm&&S.arm.k==='road'&&S.arm.hx!=null)quad(S.arm.hx,S.arm.hy,canPlace('road',S.arm.hx,S.arm.hy)?'rgba(220,70,50,.4)':'rgba(90,230,150,.45)','#fff');
  if(S.site&&S.bots.some(o=>o.site===S.site)){const s=S.site,pl=.5+.5*Math.sin(t*5);for(let j=-SR;j<=SR;j++)for(let i=-SR;i<=SR;i++){const x=s.x+i,y=s.y+j;if(x<0||y<0||x>=S.w.N||y>=S.w.N)continue;if(Math.max(Math.abs(i),Math.abs(j))===SR)quad(x,y,'rgba(255,210,122,.06)')}
   quad(s.x,s.y,`rgba(255,200,90,${.25+.25*pl})`,'#ffd27a');const c=sp(s.x+.5,s.y+.5);cx.strokeStyle=`rgba(255,220,130,${.6+.4*pl})`;cx.lineWidth=2.5;cx.beginPath();cx.ellipse(c[0],c[1],(14+6*pl)*cam.z,(14+6*pl)*cam.z*SQ,0,0,7);cx.stroke()}
- drawV6(t,quad);
+ drawV6(t,quad);if(S.moveMk){const m=S.moveMk;m.t+=dtr;const o=S.bots.find(q=>q.st==='move');if(!o&&m.t>1.2)S.moveMk=null;else{const c=sp(m.x,m.y),r=(8+3*Math.sin(t*6))*cam.z;cx.strokeStyle='#6ff0a8';cx.lineWidth=2;cx.beginPath();cx.ellipse(c[0],c[1],r,r*SQ,0,0,7);cx.stroke();cx.beginPath();cx.moveTo(c[0],c[1]-4*cam.z);cx.lineTo(c[0],c[1]-16*cam.z);cx.stroke()}}
  if(S.dig)quad(S.dig.x,S.dig.y,'rgba(255,210,122,.25)','#ffd27a');
  for(const o of S.bots)if(o.st==='dig'&&o.task)quad(o.task.x,o.task.y,'rgba(255,210,122,.12)','rgba(255,210,122,.55)');
  // objects sorted by view depth
@@ -569,7 +572,7 @@ let hudK='';function hud(){const ct=S.time%DAY,day=ct<DAYLEN;const P=packs();con
  if($('ovMats').style.display==='grid'&&(!window.__mt||performance.now()-window.__mt>400)){window.__mt=performance.now();openMats()}
  {const tot=Math.floor(S.mats.silica);if(window.__ms!=null&&tot>window.__ms){$('bMats')&&$('bMats').animate([{boxShadow:'0 0 0 2px #ffe08a'},{boxShadow:'none'}],400)}window.__ms=tot}
  if(S.sel){$('rob').style.display='flex';$('mbar').style.height=S.sel.m+'%';$('rname').textContent='Optimus '+S.sel.id+' · '+Math.round(S.sel.e)+'%';$('rDig').classList.toggle('on',tool==='dig'||S.sel.st==='dig');$('rStay').classList.toggle('on',S.sel.st==='stay');$('rCharge').classList.toggle('on',S.sel.st==='charge')}else $('rob').style.display='none';
- $('ctx').style.display=S.arm?'flex':'none';$('cGo').style.display=S.arm&&S.arm.k==='road'?'none':'';$('cX').textContent=S.arm&&S.arm.k==='road'?'Done':'Cancel';$('tAI').classList.toggle('on',S.ai);bpanel();$('tDig').classList.toggle('on',tool==='digall');$('tRaise').classList.toggle('on',tool==='raise');$('tLower').classList.toggle('on',tool==='lower');if(S.sel)$('rClean').classList.toggle('on',S.sel.st==='clean'||tool==='clean');objHud()}
+ $('ctx').style.display=S.arm?'flex':'none';$('cGo').style.display=S.arm&&S.arm.k==='road'?'none':'';$('cX').textContent=S.arm&&S.arm.k==='road'?'Done':'Cancel';$('tAI').classList.toggle('on',S.ai);bpanel();$('lstack').style.display=S.arm||bpK?'none':'flex';if(S.sel)$('rClean').classList.toggle('on',S.sel.st==='clean'||tool==='clean');objHud()}
 function uiRefresh(){}
 let bpK='';function bpanel(){const b=S.selB,e=$('bpan');if(!b||S.arm||(b.kind!=='factory'&&b.kind!=='biodome')){if(bpK){e.style.display='none';bpK=''}return}
  let k=b.kind+b.id+(b.bt>0)+!!b.make;if(b.gh)k+=Math.round(b.gh.grown*20)+'|'+Math.round(b.gh.crop*20)+b.gh.fruit+(b.gh.remain>0);if(k===bpK)return;bpK=k;e.style.display='flex';
@@ -617,9 +620,7 @@ $('pSave').onclick=()=>padMenu('save');$('pLoad').onclick=()=>padMenu('load');$(
 $('pRestart').onclick=()=>{closeOv();startLevel(S.lv[0])};$('pMenu').onclick=()=>{closeOv();S=null;showTitle()};
 $('eAgain').onclick=()=>{$('ovEnd').style.display='none';startLevel(S.lv[0])};$('eNext').onclick=()=>{$('ovEnd').style.display='none';startLevel(S.lv[0]+1)};
 $('spd').onclick=()=>{speedI=(speedI+1)%SPEEDS.length;$('spd').textContent=SPEEDS[speedI]+'X'};
-$('tRaise').onclick=()=>{tool=tool==='raise'?null:'raise';S.arm=null};$('tLower').onclick=()=>{tool=tool==='lower'?null:'lower';S.arm=null};
 $('rDig').onclick=()=>{if(!S.sel)return;tool='dig';S.arm=null;toast('Tap the land where Optimus '+S.sel.id+' should dig.',4);sfx('sel')};
-$('tDig').onclick=()=>{tool=tool==='digall'?null:'digall';S.arm=null;if(tool)toast('Tap the land to dig there. All robots will come.',4);sfx('sel')};
 $('rCharge').onclick=()=>{if(S.sel){S.sel.site=null;S.sel.st='charge';S.sel.task=null;toast('Optimus '+S.sel.id+' heading to charge.')}};
 $('rStay').onclick=()=>{if(S.sel){S.sel.site=null;S.sel.st=S.sel.st==='stay'?'idle':'stay';S.sel.tx=S.sel.x;S.sel.ty=S.sel.y;S.sel.task=null;toast(S.sel.st==='stay'?'Stay parks us in place.':'Back to work.')}};
 $('cX').onclick=()=>{S.arm=null;toast('Build cancelled.')};$('cRot').onclick=()=>{if(!S.arm)return;const K=KINDS[S.arm.k];if(K.w!==K.h){S.arm.rot=!S.arm.rot;[K.w,K.h]=[K.h,K.w]}};
@@ -650,7 +651,7 @@ function input(dt){if(joy.id!=null&&Math.abs(joy.x)>.08){VA+=joy.x*Math.abs(joy.
  let jx=0+((keys.ArrowRight||keys.KeyD)?1:0)-((keys.ArrowLeft||keys.KeyA)?1:0),jy=0+((keys.ArrowDown||keys.KeyS)?1:0)-((keys.ArrowUp||keys.KeyW)?1:0);
  if(jx||jy){cam.x+=jx*dt*420/cam.z;cam.y+=jy*dt*420/cam.z;clampCam()}
  if(gest&&gest.mode==='tap'&&ptr.size===1&&!S.arm){const p=[...ptr.values()][0];const held=(performance.now()-p.t0)/1000;
-  if(held>.45&&!botAt(p.x,p.y)&&tool!=='dig'){gest.held=true;gest.rep-=dt;if(gest.rep<=0){gest.rep=.16;const v=nearestV(p.x,p.y);if(v&&shape(S.w,v[0],v[1],tool==='lower'?-1:1))sfx('shape')}}}}
+  if(held>.45&&(tool==='raise'||tool==='lower')&&!botAt(p.x,p.y)){gest.held=true;gest.rep-=dt;if(gest.rep<=0){gest.rep=.16;const v=nearestV(p.x,p.y);if(v&&shape(S.w,v[0],v[1],tool==='lower'?-1:1))sfx('shape')}}}}
 function nearestV(sx,sy){const[x,y]=unproj(sx,sy);const vx=Math.round(x),vy=Math.round(y);return inV(S.w,vx,vy)?[vx,vy]:null}
 function botAt(sx,sy){let best=null,bd=22;for(const o of S.bots){const p=sp(o.x,o.y,hAt(S.w,Math.max(0,Math.min(S.w.N-.01,o.x)),Math.max(0,Math.min(S.w.N-.01,o.y))));const d=Math.hypot(sx-p[0],sy-(p[1]-9*cam.z));if(d<bd*Math.max(1,cam.z*.8)){bd=d;best=o}}return best}
 function tap(sx,sy){if(!S||S.outcome!=='playing')return;const[x,y]=unproj(sx,sy);const tx=Math.floor(x),ty=Math.floor(y);const N=S.w.N;
@@ -659,14 +660,16 @@ function tap(sx,sy){if(!S||S.outcome!=='playing')return;const[x,y]=unproj(sx,sy)
  const o=botAt(sx,sy);if(o){if(S.sel===o){S.sel=null;tool=null}else{S.sel=o;S.selB=null;if(tool==='dig')tool=null;toast('Optimus '+o.id+' selected · tap again to cancel')}sfx('sel');return}
  if(tx<0||ty<0||tx>=N||ty>=N)return;
  if((tool==='dig'&&S.sel)||tool==='digall'){if(occ(tx,ty)){toast("Can't dig under a building. Tap open ground.");return}
+  if(!tileHigh(tx,ty)){toast('Ground is already at surface level.');tool=null;sfx('sel');return}
   const site={x:tx,y:ty},team=tool==='dig'?[S.sel]:S.bots.filter(o=>o.st!=='down');S.site=site;
   for(const o of team){o.site=site;o.task=null;o.wt2=0;if(o.st==='charge'){o.resume='dig';continue}o.st='dig';startDig(o,null,true)}
-  toast(siteHigh(site)?(team.length>1?'All '+team.length+' robots digging here.':'Optimus '+team[0].id+' digging here.'):'Already flat here. Robots standing by.');tool=null;sfx('sel');return}
+  toast(siteHigh(site)?(team.length>1?'All '+team.length+' robots digging here.':'Optimus '+team[0].id+' digging here.'):'Ground is already at surface level.');tool=null;sfx('sel');return}
  if(tool==='raise'||tool==='lower'){const v=nearestV(sx,sy);if(v&&shape(S.w,v[0],v[1],tool==='raise'?1:-1))sfx('shape');return}
  const now=performance.now();if(now-lastTap.t<320&&Math.hypot(sx-lastTap.x,sy-lastTap.y)<30){gather(x,y);lastTap.t=0;return}lastTap={t:now,x:sx,y:sy};
  const b=occ(tx,ty);if(b&&b!==S.ship){S.selB=S.selB===b?null:b;const K=KINDS[b.kind];toast(K.name+(b.bt>0?' under construction.':b.kind==='pack'?' · battery '+Math.round(b.bat)+'%':b.kind==='solar'&&b.dust>.1?' · dust '+Math.round(b.dust*100)+'%':' online.'));
   if(b.kind==='solar'&&b.dust>.02&&b.bt<=0){const o=(tool==='clean'&&S.sel)?S.sel:nearestFree(b);tool=tool==='clean'?null:tool;if(o&&sendClean(o,b)){S.selB=null;toast('Optimus '+o.id+' heading to clean the solar array.');sfx('sel')}else if(!o){b.dust=0;toast('No robot free. You wiped the panel by hand.')}}return}
  if(b===S.ship){toast(S.sections+' Starship sections left for building.');return}
+ if(S.sel&&!tool){const o=S.sel;if(o.st==='down'){toast('Optimus '+o.id+' is out of charge.');return}o.site=null;o.task=null;o.resume=null;o.st='move';o.tx=Math.max(.3,Math.min(N-.3,x));o.ty=Math.max(.3,Math.min(N-.3,y));o.home={x:o.tx,y:o.ty};S.moveMk={x:o.tx,y:o.ty,t:0};toast('Optimus '+o.id+' moving there.');sfx('sel');return}
  if(S.sel){S.sel=null;tool=null}else toast('Double-tap the land to summon all Optimus.')}
 function paintRoad(sx,sy){const[x,y]=unproj(sx,sy);const tx=Math.floor(x),ty=Math.floor(y);S.arm.hx=tx;S.arm.hy=ty;if(S.roads.has(tx+','+ty))return;const e=canPlace('road',tx,ty);if(e){if(S.arm.lastE!==tx+','+ty){S.arm.lastE=tx+','+ty;toast(e==='Flatten before you build.'?'Roads need flat squares.':e)}return}placeBuild('road',tx,ty)}
 function gather(x,y){for(const o of S.bots){if(o.st==='down'||o.st==='charge')continue;o.site=null;o.st='gather';o.task=null;o.tx=x+(Math.random()-.5)*1.5;o.ty=y+(Math.random()-.5)*1;o.home={x:o.tx,y:o.ty};setTimeout(()=>{if(o.st==='gather')o.st='idle'},12000)}toast('All Optimus grouping up.');sfx('sel')}
@@ -756,7 +759,7 @@ let rosK='';function rosterHud(){const e=$('roster');const k=S.bots.map(o=>o.id+
  if(rosK.split(',').length!==S.bots.length||!e.children.length||e.children.length!==S.bots.length){e.innerHTML=S.bots.map(o=>`<button class="rc" data-id="${o.id}"><span class=n>${o.id}</span><svg viewBox="0 0 16 16"></svg><i><b></b></i></button>`).join('');
   for(const c of e.children)c.onclick=()=>{const o=S.bots.find(q=>q.id===+c.dataset.id);if(!o)return;S.sel=o;S.selB=null;tool=null;const[u,v]=rv(o.x,o.y);cam.x=u*T;cam.y=v*T*SQ-hS(o.x,o.y)*T*HZ;clampCam();toast('Optimus '+o.id+' · '+job(o)+' · '+Math.round(o.e)+'%');sfx('sel')}}
  rosK=k;[...e.children].forEach((c,i)=>{const o=S.bots[i];const j=job(o);c.className='rc j-'+j+(o===S.sel?' on':'');c.dataset.job=j;c.querySelector('svg').innerHTML=JI[j];const b=c.querySelector('b');b.style.width=Math.round(o.e)+'%';b.style.background=o.e<25?'#e0604a':'#4fd18a'})}
-const TUT=[['Dig','Tap Dig, then tap a hill. All robots level it to pad height and bring back materials.'],['Build','Open Build. The objectives panel (bottom left) shows what to make next and what is missing.'],['Charge','Robots walk to their numbered Megapack port when low. Tap a robot, then Charge to send it early.'],['Clean','Dust and storms choke the solar. Tap a dusty panel and the nearest robot wipes it clean.'],['Rotate','Push the bottom-right joystick left or right to rotate the view. Up and down zooms.']];
+const TUT=[['Move & Dig','Tap an Optimus, then tap the land to walk it there. Tap Dig on its panel, then a raised hill: it digs down to surface level and brings back materials.'],['Build','Open Build. The objective box (bottom-left corner) shows what to make next and what is missing.'],['Charge','Robots walk to their numbered Megapack port when low. Tap a robot, then Charge to send it early.'],['Clean','Dust and storms choke the solar. Tap a dusty panel and the nearest robot wipes it clean.'],['Rotate','Push the bottom-right joystick left or right to rotate the view. Up and down zooms.']];
 let tutI=0;function tutShow(force){let seen=0;try{seen=+localStorage.getItem('om.tut')}catch(e){}if(seen&&!force)return;tutI=0;tutDraw();$('tut').style.display='block'}
 function tutDraw(){$('tutH').textContent=(tutI+1)+'/'+TUT.length+' · '+TUT[tutI][0];$('tutP').textContent=TUT[tutI][1];$('tutN').textContent=tutI<TUT.length-1?'Next':'Got it'}
 function tutEnd(){$('tut').style.display='none';try{localStorage.setItem('om.tut',1)}catch(e){}}
